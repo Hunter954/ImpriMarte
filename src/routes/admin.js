@@ -117,10 +117,24 @@ router.post('/categorias/:id/excluir', async (req,res,next)=>{ try{await query('
 router.get('/configuracoes', async (req,res,next)=>{
   try { res.render('admin/settings',{title:'Configurações',settings:await getSettings(),saved:req.query.saved==='1'}); } catch(err){next(err)}
 });
-router.post('/configuracoes', async (req,res,next)=>{
+router.post('/configuracoes', upload.fields([{ name: 'hero_background', maxCount: 1 }, { name: 'promo_background', maxCount: 1 }]), async (req,res,next)=>{
   try {
     const allowed=['site_name','whatsapp_number','hero_kicker','hero_title','hero_text','about_text','instagram_url','facebook_url','tiktok_url','footer_note'];
-    for(const key of allowed){ if(req.body[key]!==undefined) await query('INSERT INTO settings(key,value) VALUES($1,$2) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value',[key,String(req.body[key])]); }
+    for(const key of allowed){
+      if(req.body[key]!==undefined) await query('INSERT INTO settings(key,value) VALUES($1,$2) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value',[key,String(req.body[key])]);
+    }
+
+    const current = await getSettings();
+    let heroPath = current.hero_background_path || '';
+    let promoPath = current.promo_background_path || '';
+    if(req.body.remove_hero_background) heroPath = '';
+    if(req.body.remove_promo_background) promoPath = '';
+    if(req.files?.hero_background?.[0]) heroPath = `/uploads/${req.files.hero_background[0].filename}`;
+    if(req.files?.promo_background?.[0]) promoPath = `/uploads/${req.files.promo_background[0].filename}`;
+
+    for (const [key, value] of [['hero_background_path', heroPath], ['promo_background_path', promoPath]]) {
+      await query('INSERT INTO settings(key,value) VALUES($1,$2) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value',[key,value]);
+    }
     res.redirect('/admin/configuracoes?saved=1');
   } catch(err){next(err)}
 });

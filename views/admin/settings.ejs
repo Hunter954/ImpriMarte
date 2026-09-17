@@ -1,1 +1,29 @@
-<%- include('_head',{title}) %><% if(saved){ %><div class="alert success">Configurações salvas.</div><% } %><form class="admin-card form-grid" method="post"><label>Nome do site<input name="site_name" value="<%= settings.site_name || '' %>"></label><label>WhatsApp (DDI+DDD+número)<input name="whatsapp_number" value="<%= settings.whatsapp_number || '' %>" placeholder="5545999999999"></label><label class="full">Chamada pequena do topo<input name="hero_kicker" value="<%= settings.hero_kicker || '' %>"></label><label class="full">Título principal<input name="hero_title" value="<%= settings.hero_title || '' %>"></label><label class="full">Texto principal<textarea name="hero_text"><%= settings.hero_text || '' %></textarea></label><label class="full">Texto sobre<textarea name="about_text" rows="5"><%= settings.about_text || '' %></textarea></label><label>Instagram<input name="instagram_url" value="<%= settings.instagram_url || '' %>"></label><label>Facebook<input name="facebook_url" value="<%= settings.facebook_url || '' %>"></label><label>TikTok<input name="tiktok_url" value="<%= settings.tiktok_url || '' %>"></label><label>Rodapé<input name="footer_note" value="<%= settings.footer_note || '' %>"></label><div class="full form-actions"><button class="admin-btn">Salvar configurações</button></div></form><%- include('_foot') %>
+<%- include('_head',{title}) %>
+<% if(saved){ %><div class="alert success">Configurações salvas.</div><% } %>
+<form class="admin-card form-grid" method="post" enctype="multipart/form-data">
+  <label>Nome do site<input name="site_name" value="<%= settings.site_name || '' %>"></label>
+  <label>WhatsApp (DDI+DDD+número)<input name="whatsapp_number" value="<%= settings.whatsapp_number || '' %>" placeholder="5545999999999"></label>
+  <label class="full">Chamada pequena do topo<input name="hero_kicker" value="<%= settings.hero_kicker || '' %>"></label>
+  <label class="full">Título principal<input name="hero_title" value="<%= settings.hero_title || '' %>"></label>
+  <label class="full">Texto principal<textarea name="hero_text"><%= settings.hero_text || '' %></textarea></label>
+
+  <div class="full admin-upload-block">
+    <div><strong>Imagem de fundo do banner principal</strong><small>Use uma imagem horizontal, preferencialmente 1600×650 px ou maior.</small></div>
+    <% if(settings.hero_background_path){ %><img class="admin-image-preview" src="<%= settings.hero_background_path %>" alt="Banner atual"><label class="check"><input type="checkbox" name="remove_hero_background"> Remover imagem atual</label><% } %>
+    <input type="file" name="hero_background" accept="image/png,image/jpeg,image/webp,image/gif">
+  </div>
+
+  <div class="full admin-upload-block">
+    <div><strong>Imagem de fundo — “Personalize sem limites”</strong><small>Use uma imagem horizontal para a seção “Da sua ideia para a realidade”.</small></div>
+    <% if(settings.promo_background_path){ %><img class="admin-image-preview" src="<%= settings.promo_background_path %>" alt="Imagem atual"><label class="check"><input type="checkbox" name="remove_promo_background"> Remover imagem atual</label><% } %>
+    <input type="file" name="promo_background" accept="image/png,image/jpeg,image/webp,image/gif">
+  </div>
+
+  <label class="full">Texto sobre<textarea name="about_text" rows="5"><%= settings.about_text || '' %></textarea></label>
+  <label>Instagram<input name="instagram_url" value="<%= settings.instagram_url || '' %>"></label>
+  <label>Facebook<input name="facebook_url" value="<%= settings.facebook_url || '' %>"></label>
+  <label>TikTok<input name="tiktok_url" value="<%= settings.tiktok_url || '' %>"></label>
+  <label>Rodapé<input name="footer_note" value="<%= settings.footer_note || '' %>"></label>
+  <div class="full form-actions"><button class="admin-btn">Salvar configurações</button></div>
+</form>
+<%- include('_foot') %>

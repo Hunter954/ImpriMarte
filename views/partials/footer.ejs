@@ -1,13 +1,16 @@
 <footer class="site-footer">
   <div class="container footer-grid">
-    <div><img class="footer-logo" src="/img/logo.png" alt="ImpriMarte"><p><%= settings.footer_note || '' %></p></div>
+    <div class="footer-brand-col"><img class="footer-logo" src="/img/logo.png" alt="ImpriMarte"><p><%= settings.footer_note || '' %></p></div>
     <div><h4>Institucional</h4><a href="/sobre">Sobre nós</a><a href="/contato">Contato</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos</a></div>
-    <div><h4>Atendimento</h4><a class="wa-link" href="#" data-whatsapp>Falar no WhatsApp</a><a href="/produtos">Ver produtos</a><a href="/carrinho">Meu carrinho</a></div>
+    <div><h4>Atendimento</h4><a class="wa-link" href="#" data-whatsapp><i class="bi bi-whatsapp"></i> Falar no WhatsApp</a><a href="/produtos"><i class="bi bi-grid"></i> Ver produtos</a><a href="/carrinho"><i class="bi bi-bag"></i> Meu carrinho</a></div>
   </div>
   <div class="container footer-bottom">© <%= year %> ImpriMarte Personalizados</div>
 </footer>
 <div class="mobile-bottom-nav mobile-only">
-  <a href="/">⌂<span>Início</span></a><a href="/produtos">▦<span>Produtos</span></a><a href="/carrinho">♡<span>Carrinho</span></a><a href="/contato">◉<span>Contato</span></a>
+  <a href="/"><i class="bi bi-house-fill"></i><span>Início</span></a>
+  <a href="/produtos"><i class="bi bi-grid"></i><span>Produtos</span></a>
+  <a href="/carrinho"><i class="bi bi-bag"></i><span>Carrinho</span></a>
+  <a href="/contato"><i class="bi bi-whatsapp"></i><span>Contato</span></a>
 </div>
 <script>window.IMPRIMARTE_WHATSAPP='<%= settings.whatsapp_number || '' %>';</script>
 <script src="/js/site.js"></script>

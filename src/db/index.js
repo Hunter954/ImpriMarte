@@ -128,7 +128,9 @@ async function initDb() {
     instagram_url: '#',
     facebook_url: '#',
     tiktok_url: '#',
-    footer_note: 'Feito com carinho para transformar suas ideias em algo único.'
+    footer_note: 'Feito com carinho para transformar suas ideias em algo único.',
+    hero_background_path: '',
+    promo_background_path: ''
   };
   for (const [key, value] of Object.entries(defaults)) {
     await query('INSERT INTO settings(key,value) VALUES($1,$2) ON CONFLICT (key) DO NOTHING', [key, value]);

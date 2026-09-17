@@ -1,47 +1,61 @@
 <%- include('partials/head',{title}) %>
 <%- include('partials/header') %>
 <main>
-  <section class="hero">
-    <div class="container hero-grid">
+  <% const iconMap = {sticker:'bi-sticky',book:'bi-journal-bookmark',gift:'bi-gift',home:'bi-house-heart',file:'bi-palette',party:'bi-balloon',tag:'bi-tag',grid:'bi-grid'}; %>
+  <section class="hero container">
+    <div class="hero-card" <%- settings.hero_background_path ? `style="--hero-bg:url('${settings.hero_background_path}')"` : '' %>>
       <div class="hero-copy">
         <span class="eyebrow"><%= settings.hero_kicker %></span>
         <h1><%= settings.hero_title %></h1>
         <p><%= settings.hero_text %></p>
-        <a class="btn" href="/produtos">Conheça nossos produtos →</a>
-        <div class="trust-row"><span>🚚 Envio para todo o Brasil</span><span>✓ Compra segura</span><span>💬 Orçamento pelo WhatsApp</span></div>
-      </div>
-      <div class="hero-art">
-        <div class="hero-orb"></div>
-        <div class="hero-products">
-          <div class="mock notebook"><span>Sonhe.<br>Personalize.<br>Conquiste.</span></div>
-          <div class="mock mug"><span>Impri<b>Marte</b></span></div>
-          <div class="mock tag">PERSONALIZADOS</div>
+        <a class="btn" href="/produtos">Conheça nossos produtos <i class="bi bi-arrow-right"></i></a>
+        <div class="trust-row">
+          <span><i class="bi bi-truck"></i><b>Envio para todo o Brasil</b></span>
+          <span><i class="bi bi-shield-check"></i><b>Atendimento seguro</b></span>
+          <span><i class="bi bi-whatsapp"></i><b>Orçamento pelo WhatsApp</b></span>
         </div>
       </div>
+      <% if(!settings.hero_background_path){ %><div class="hero-fallback"><img src="/img/logo.png" alt="ImpriMarte"></div><% } %>
     </div>
   </section>
 
-  <section class="category-strip container">
+  <section class="category-strip container" aria-label="Categorias">
     <% categories.forEach(cat => { %>
-      <a class="category-pill" href="/categoria/<%= cat.slug %>"><span class="category-icon">✦</span><strong><%= cat.name %></strong></a>
+      <a class="category-pill" href="/categoria/<%= cat.slug %>">
+        <span class="category-icon"><i class="bi <%= iconMap[cat.icon] || (cat.icon && cat.icon.startsWith('bi-') ? cat.icon : 'bi-grid') %>"></i></span>
+        <strong><%= cat.name %></strong>
+      </a>
     <% }) %>
   </section>
 
   <section class="container split-promos">
-    <div class="promo-main">
-      <small>PERSONALIZE SEM LIMITES</small><h2>Da sua ideia<br>para a realidade</h2><p>Produtos únicos para pessoas, empresas e momentos especiais.</p><a class="btn btn-light" href="/produtos">Ver todos os produtos →</a>
-      <div class="box-visual"><span>impri</span><b>marte</b></div>
+    <div class="promo-main" <%- settings.promo_background_path ? `style="--promo-bg:url('${settings.promo_background_path}')"` : '' %>>
+      <div class="promo-overlay"></div>
+      <div class="promo-content"><small>PERSONALIZE SEM LIMITES</small><h2>Da sua ideia<br>para a realidade</h2><p>Produtos únicos para pessoas, empresas e momentos especiais.</p><a class="btn btn-light" href="/produtos">Ver todos os produtos <i class="bi bi-arrow-right"></i></a></div>
+      <% if(!settings.promo_background_path){ %><img class="promo-logo-art" src="/img/logo.png" alt=""><% } %>
     </div>
-    <div class="promo-side"><div><h3>Brindes corporativos</h3><p>Sua marca sempre presente.</p><a href="/categoria/brindes-corporativos">Ver opções →</a></div><div><h3>Festas inesquecíveis</h3><p>Personalizados para todas as ocasiões.</p><a href="/categoria/festas-e-eventos">Ver opções →</a></div></div>
+    <div class="promo-side">
+      <a class="promo-mini" href="/categoria/brindes-corporativos"><i class="bi bi-gift"></i><div><h3>Brindes corporativos</h3><p>Sua marca sempre presente.</p><span>Ver opções <i class="bi bi-arrow-right"></i></span></div></a>
+      <a class="promo-mini promo-mini-soft" href="/categoria/festas-e-eventos"><i class="bi bi-balloon-heart"></i><div><h3>Festas inesquecíveis</h3><p>Personalizados para todas as ocasiões.</p><span>Ver opções <i class="bi bi-arrow-right"></i></span></div></a>
+    </div>
   </section>
 
   <section class="container section-block">
-    <div class="section-head"><h2>Produtos em destaque</h2><a href="/produtos">Ver todos →</a></div>
+    <div class="section-head"><h2>Produtos em destaque</h2><a href="/produtos">Ver todos <i class="bi bi-arrow-right"></i></a></div>
     <div class="product-grid"><% products.forEach(product => { %><%- include('partials/product-card',{product}) %><% }) %></div>
   </section>
 
-  <section class="benefit-band"><div class="container benefit-grid"><span>◇ <b>Qualidade</b><small>em cada detalhe</small></span><span>☆ <b>Atendimento</b><small>personalizado</small></span><span>▣ <b>Produção sob medida</b><small>para sua necessidade</small></span><span>♡ <b>Feito para você</b><small>do seu jeito</small></span></div></section>
+  <section class="benefit-band"><div class="container benefit-grid">
+    <span><i class="bi bi-gem"></i><b>Qualidade</b><small>em cada detalhe</small></span>
+    <span><i class="bi bi-headset"></i><b>Atendimento</b><small>personalizado</small></span>
+    <span><i class="bi bi-truck"></i><b>Produção sob medida</b><small>para sua necessidade</small></span>
+    <span><i class="bi bi-heart"></i><b>Feito para você</b><small>do seu jeito</small></span>
+  </div></section>
 
-  <section class="container social-section"><div><h2>Siga a ImpriMarte<br>nas redes sociais!</h2><p>Inspire-se com nossas criações, novidades e muito mais.</p></div><div class="social-cards"><div></div><div></div><div></div><div></div></div><a class="newsletter-card wa-link" href="#" data-whatsapp><strong>Quer um orçamento?</strong><span>Fale agora com a gente no WhatsApp →</span></a></section>
+  <section class="container social-section">
+    <div><span class="eyebrow">INSPIRAÇÃO</span><h2>Siga a ImpriMarte<br>nas redes sociais!</h2><p>Inspire-se com nossas criações, novidades e muito mais.</p><div class="social-links"><a href="<%= settings.instagram_url || '#' %>"><i class="bi bi-instagram"></i></a><a href="<%= settings.facebook_url || '#' %>"><i class="bi bi-facebook"></i></a><a href="<%= settings.tiktok_url || '#' %>"><i class="bi bi-tiktok"></i></a></div></div>
+    <div class="social-cards"><div><i class="bi bi-stars"></i></div><div><i class="bi bi-gift"></i></div><div><i class="bi bi-journal-heart"></i></div><div><i class="bi bi-palette"></i></div></div>
+    <a class="newsletter-card wa-link" href="#" data-whatsapp><i class="bi bi-whatsapp"></i><strong>Quer um orçamento?</strong><span>Fale agora com a gente <i class="bi bi-arrow-right"></i></span></a>
+  </section>
 </main>
 <%- include('partials/footer') %>
