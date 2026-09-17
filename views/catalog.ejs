@@ -1,0 +1,6 @@
+<%- include('partials/head',{title}) %><%- include('partials/header') %>
+<main class="container page-space">
+  <div class="catalog-head"><div><span class="eyebrow">CATÁLOGO</span><h1>Todos os produtos</h1></div><form class="catalog-search" method="get"><input name="q" placeholder="Buscar produto" value="<%= q %>"><button class="btn">Buscar</button></form></div>
+  <% if(!products.length){ %><div class="empty-state"><h2>Nenhum produto encontrado.</h2><p>Tente outra busca ou fale conosco pelo WhatsApp.</p></div><% } %>
+  <div class="product-grid product-grid-wide"><% products.forEach(product => { %><%- include('partials/product-card',{product}) %><% }) %></div>
+</main><%- include('partials/footer') %>

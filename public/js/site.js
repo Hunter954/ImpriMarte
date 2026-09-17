@@ -1,0 +1,22 @@
+(()=>{
+const KEY='imprimarte_cart_v1', FAV='imprimarte_favs_v1';
+const parse=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch{return d}};
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const getCart=()=>parse(KEY,[]); const setCart=c=>{save(KEY,c);updateCount();};
+const updateCount=()=>{const n=getCart().reduce((s,i)=>s+(i.qty||1),0);document.querySelectorAll('[data-cart-count]').forEach(el=>el.textContent=n)};
+const add=(p,qty=1,note='')=>{const c=getCart();const found=c.find(i=>String(i.id)===String(p.id)&&i.note===note);if(found)found.qty+=qty;else c.push({...p,qty,note});setCart(c);toast('Produto adicionado ao carrinho')};
+const toast=t=>{const el=document.createElement('div');el.className='toast';el.textContent=t;Object.assign(el.style,{position:'fixed',right:'18px',bottom:'85px',background:'#111',color:'#fff',padding:'12px 16px',borderRadius:'10px',zIndex:9999});document.body.appendChild(el);setTimeout(()=>el.remove(),1800)};
+
+document.getElementById('menuToggle')?.addEventListener('click',()=>document.getElementById('mainNav')?.classList.toggle('open'));
+document.querySelectorAll('.add-cart').forEach(b=>b.addEventListener('click',()=>add(JSON.parse(b.dataset.product))));
+document.getElementById('addProduct')?.addEventListener('click',e=>{add(JSON.parse(e.currentTarget.dataset.product),Math.max(1,parseInt(document.getElementById('qty')?.value||'1')),document.getElementById('note')?.value||'')});
+const wa=window.IMPRIMARTE_WHATSAPP||'';
+const waOpen=msg=>window.open(`https://wa.me/${wa.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+document.querySelectorAll('[data-whatsapp]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();waOpen('Olá! Vim pelo site da ImpriMarte e gostaria de fazer um orçamento.') }));
+document.getElementById('quoteProduct')?.addEventListener('click',e=>{const q=document.getElementById('qty')?.value||1;const n=document.getElementById('note')?.value||'';waOpen(`Olá! Gostaria de um orçamento para: ${e.currentTarget.dataset.name}. Quantidade estimada: ${q}.${n?` Observação: ${n}`:''}`)});
+
+let favs=parse(FAV,[]);const paintFav=()=>document.querySelectorAll('[data-favorite]').forEach(b=>b.classList.toggle('active',favs.includes(String(b.dataset.favorite))));paintFav();document.querySelectorAll('[data-favorite]').forEach(b=>b.addEventListener('click',()=>{const id=String(b.dataset.favorite);favs=favs.includes(id)?favs.filter(x=>x!==id):[...favs,id];save(FAV,favs);paintFav()}));
+
+const renderCart=()=>{const root=document.getElementById('cartPage');if(!root)return;const c=getCart();if(!c.length){root.innerHTML='<div class="empty-state"><h2>Seu carrinho está vazio.</h2><p>Adicione produtos para montar um pedido de orçamento.</p><a class="btn" href="/produtos">Ver produtos</a></div>';return;}root.innerHTML=c.map((i,idx)=>`<div class="cart-item"><div class="cart-thumb">${i.image?`<img src="${i.image}" alt="">`:'<div class="image-placeholder"><span>Impri</span><b>Marte</b></div>'}</div><div><strong>${i.name}</strong>${i.note?`<small style="display:block;color:#777;margin-top:4px">${i.note}</small>`:''}<small style="display:block;color:#e66914;margin-top:5px">${i.price?`A partir de R$ ${Number(i.price).toFixed(2).replace('.',',')}`:'Sob consulta'}</small></div><div class="cart-qty"><button data-dec="${idx}">−</button><b>${i.qty}</b><button data-inc="${idx}">+</button></div><button class="cart-remove" data-rm="${idx}">Remover</button></div>`).join('')+`<div class="cart-summary"><div><strong>${c.reduce((s,i)=>s+i.qty,0)} item(ns)</strong><p>O valor final será confirmado no atendimento.</p></div><button id="sendCart" class="btn">Enviar pedido pelo WhatsApp →</button></div>`;root.querySelectorAll('[data-inc]').forEach(b=>b.onclick=()=>{const x=getCart();x[b.dataset.inc].qty++;setCart(x);renderCart()});root.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>{const x=getCart();x[b.dataset.dec].qty=Math.max(1,x[b.dataset.dec].qty-1);setCart(x);renderCart()});root.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{const x=getCart();x.splice(b.dataset.rm,1);setCart(x);renderCart()});document.getElementById('sendCart').onclick=()=>{const lines=getCart().map(i=>`• ${i.name} — qtd. ${i.qty}${i.note?` — ${i.note}`:''}`);waOpen(`Olá! Montei um pedido no site da ImpriMarte e gostaria de orçamento:\n\n${lines.join('\n')}\n\nPode me ajudar?`)};};
+renderCart();updateCount();
+})();

@@ -1,0 +1,47 @@
+<%- include('partials/head',{title}) %>
+<%- include('partials/header') %>
+<main>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow"><%= settings.hero_kicker %></span>
+        <h1><%= settings.hero_title %></h1>
+        <p><%= settings.hero_text %></p>
+        <a class="btn" href="/produtos">Conheça nossos produtos →</a>
+        <div class="trust-row"><span>🚚 Envio para todo o Brasil</span><span>✓ Compra segura</span><span>💬 Orçamento pelo WhatsApp</span></div>
+      </div>
+      <div class="hero-art">
+        <div class="hero-orb"></div>
+        <div class="hero-products">
+          <div class="mock notebook"><span>Sonhe.<br>Personalize.<br>Conquiste.</span></div>
+          <div class="mock mug"><span>Impri<b>Marte</b></span></div>
+          <div class="mock tag">PERSONALIZADOS</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="category-strip container">
+    <% categories.forEach(cat => { %>
+      <a class="category-pill" href="/categoria/<%= cat.slug %>"><span class="category-icon">✦</span><strong><%= cat.name %></strong></a>
+    <% }) %>
+  </section>
+
+  <section class="container split-promos">
+    <div class="promo-main">
+      <small>PERSONALIZE SEM LIMITES</small><h2>Da sua ideia<br>para a realidade</h2><p>Produtos únicos para pessoas, empresas e momentos especiais.</p><a class="btn btn-light" href="/produtos">Ver todos os produtos →</a>
+      <div class="box-visual"><span>impri</span><b>marte</b></div>
+    </div>
+    <div class="promo-side"><div><h3>Brindes corporativos</h3><p>Sua marca sempre presente.</p><a href="/categoria/brindes-corporativos">Ver opções →</a></div><div><h3>Festas inesquecíveis</h3><p>Personalizados para todas as ocasiões.</p><a href="/categoria/festas-e-eventos">Ver opções →</a></div></div>
+  </section>
+
+  <section class="container section-block">
+    <div class="section-head"><h2>Produtos em destaque</h2><a href="/produtos">Ver todos →</a></div>
+    <div class="product-grid"><% products.forEach(product => { %><%- include('partials/product-card',{product}) %><% }) %></div>
+  </section>
+
+  <section class="benefit-band"><div class="container benefit-grid"><span>◇ <b>Qualidade</b><small>em cada detalhe</small></span><span>☆ <b>Atendimento</b><small>personalizado</small></span><span>▣ <b>Produção sob medida</b><small>para sua necessidade</small></span><span>♡ <b>Feito para você</b><small>do seu jeito</small></span></div></section>
+
+  <section class="container social-section"><div><h2>Siga a ImpriMarte<br>nas redes sociais!</h2><p>Inspire-se com nossas criações, novidades e muito mais.</p></div><div class="social-cards"><div></div><div></div><div></div><div></div></div><a class="newsletter-card wa-link" href="#" data-whatsapp><strong>Quer um orçamento?</strong><span>Fale agora com a gente no WhatsApp →</span></a></section>
+</main>
+<%- include('partials/footer') %>

@@ -1,0 +1,3 @@
+<%- include('partials/head',{title}) %><%- include('partials/header') %>
+<main class="container page-space"><div class="page-hero"><span class="eyebrow">CATEGORIA</span><h1><%= category.name %></h1><p>Escolha um produto e envie sua ideia para montarmos o orçamento.</p></div><div class="product-grid product-grid-wide"><% products.forEach(product => { %><%- include('partials/product-card',{product}) %><% }) %></div></main>
+<%- include('partials/footer') %>
