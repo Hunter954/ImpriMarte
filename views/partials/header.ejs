@@ -1,7 +1,7 @@
 <header class="site-header">
   <div class="header-main container">
     <button class="icon-btn mobile-only menu-btn" id="menuToggle" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
-    <a href="/" class="brand"><img src="/img/logo.png" alt="ImpriMarte"></a>
+    <a href="/" class="brand"><img src="<%= settings.site_logo_path || '/img/logo.png' %>" alt="ImpriMarte"></a>
     <form class="search desktop-only" action="/produtos" method="get">
       <input name="q" placeholder="O que você deseja personalizar?" value="<%= typeof q !== 'undefined' ? q : '' %>">
       <button aria-label="Buscar"><i class="bi bi-search"></i></button>

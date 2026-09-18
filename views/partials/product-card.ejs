@@ -1,7 +1,7 @@
 <article class="product-card">
   <button class="fav-btn" data-favorite="<%= product.id %>" aria-label="Favoritar"><i class="bi bi-heart"></i></button>
   <a href="/produto/<%= product.slug %>" class="product-image">
-    <% if(product.image_path){ %><img src="<%= product.image_path %>" alt="<%= product.name %>"><% } else { %><div class="image-placeholder"><img class="placeholder-logo" src="/img/logo.png" alt="ImpriMarte"></div><% } %>
+    <% if(product.image_path){ %><img src="<%= product.image_path %>" alt="<%= product.name %>"><% } else { %><div class="image-placeholder"><img class="placeholder-logo" src="<%= settings.site_logo_path || '/img/logo.png' %>" alt="ImpriMarte"></div><% } %>
   </a>
   <div class="product-info">
     <a href="/produto/<%= product.slug %>"><h3><%= product.name %></h3></a>

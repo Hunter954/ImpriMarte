@@ -1,1 +1,34 @@
-<%- include('_head',{title}) %><div class="admin-two"><form class="admin-card" method="post" enctype="multipart/form-data"><h2>Novo banner</h2><label>Título<input name="title" required></label><label>Subtítulo<input name="subtitle"></label><label>Texto do botão<input name="button_text"></label><label>Link do botão<input name="button_link" placeholder="/produtos"></label><label>Imagem<input type="file" name="image" accept="image/*"></label><label>Ordem<input name="sort_order" type="number" value="0"></label><label class="check"><input name="active" type="checkbox" checked> Ativo</label><button class="admin-btn">Adicionar</button></form><div class="admin-card"><h2>Banners cadastrados</h2><% if(!banners.length){ %><p>Nenhum banner extra cadastrado.</p><% } %><% banners.forEach(b=>{ %><div class="banner-row"><% if(b.image_path){ %><img src="<%= b.image_path %>"><% } %><div><strong><%= b.title %></strong><small><%= b.subtitle %></small></div><form method="post" action="/admin/banners/<%= b.id %>/excluir" onsubmit="return confirm('Excluir banner?')"><button class="danger">Excluir</button></form></div><% }) %></div></div><%- include('_foot') %>
+<%- include('_head',{title}) %>
+<div class="page-intro">
+  <div><h2>Banners e campanhas</h2><p>Gerencie peças promocionais extras exibidas na página inicial.</p></div>
+</div>
+<div class="admin-split-layout banners-layout">
+  <section class="admin-card form-section side-create-card">
+    <div class="section-title"><span class="section-icon"><i class="bi bi-card-image"></i></span><div><h3><%= edit ? 'Editar banner' : 'Novo banner' %></h3><p>Imagem, chamada e link da campanha.</p></div></div>
+    <form method="post" enctype="multipart/form-data" action="<%= edit ? '/admin/banners/'+edit.id+'/editar' : '/admin/banners' %>" class="stack-form">
+      <label><span>Título</span><input name="title" value="<%= edit?.title || '' %>" required placeholder="Ex.: Especial Dia dos Professores"></label>
+      <label><span>Subtítulo</span><textarea name="subtitle" rows="3" placeholder="Texto de apoio"><%= edit?.subtitle || '' %></textarea></label>
+      <div class="two-fields"><label><span>Texto do botão</span><input name="button_text" value="<%= edit?.button_text || '' %>" placeholder="Ver produtos"></label><label><span>Link</span><input name="button_link" value="<%= edit?.button_link || '' %>" placeholder="/produtos"></label></div>
+      <div class="two-fields"><label><span>Posição</span><select name="position"><option value="home" <%= !edit || edit.position==='home'?'selected':'' %>>Home</option></select></label><label><span>Ordem</span><input name="sort_order" type="number" value="<%= edit?.sort_order || 0 %>"></label></div>
+      <label><span>Imagem</span><input type="file" name="image" accept="image/*" data-image-input></label>
+      <% if(edit?.image_path){ %><div class="banner-edit-preview"><img src="<%= edit.image_path %>" alt=""><label class="check"><input type="checkbox" name="remove_image"> Remover imagem atual</label></div><% } %>
+      <label class="switch-row"><div><strong>Banner ativo</strong><small>Exibir no site</small></div><span class="switch"><input name="active" type="checkbox" <%= !edit || edit.active?'checked':'' %>><i></i></span></label>
+      <div class="form-actions"><% if(edit){ %><a class="admin-btn ghost" href="/admin/banners">Cancelar</a><% } %><button class="admin-btn" type="submit"><i class="bi bi-check2"></i> <%= edit ? 'Salvar alterações' : 'Criar banner' %></button></div>
+    </form>
+  </section>
+
+  <section class="admin-card">
+    <div class="card-head"><div><span class="card-kicker">CAMPANHAS</span><h3>Banners cadastrados</h3></div><span class="count-badge"><%= banners.length %> itens</span></div>
+    <% if(!banners.length){ %><div class="empty-admin"><i class="bi bi-images"></i><h4>Nenhum banner extra</h4><p>Crie uma campanha para aparecer na home.</p></div><% } %>
+    <div class="banner-admin-grid">
+      <% banners.forEach(b=>{ %>
+        <article class="banner-admin-card">
+          <div class="banner-thumb"><% if(b.image_path){ %><img src="<%= b.image_path %>" alt=""><% } else { %><div><i class="bi bi-image"></i><span>Sem imagem</span></div><% } %><span class="badge <%= b.active?'on':'off' %>"><%= b.active?'Ativo':'Inativo' %></span></div>
+          <div class="banner-body"><div><strong><%= b.title %></strong><p><%= b.subtitle || 'Sem subtítulo' %></p></div><div class="banner-meta"><span><i class="bi bi-sort-numeric-down"></i> Ordem <%= b.sort_order %></span><span><i class="bi bi-link-45deg"></i> <%= b.button_link || 'Sem link' %></span></div></div>
+          <div class="banner-actions"><a class="admin-btn ghost compact" href="/admin/banners/<%= b.id %>/editar"><i class="bi bi-pencil"></i> Editar</a><form method="post" action="/admin/banners/<%= b.id %>/status"><button class="icon-action" title="Alternar status"><i class="bi <%= b.active?'bi-eye-slash':'bi-eye' %>"></i></button></form><form method="post" action="/admin/banners/<%= b.id %>/excluir" data-confirm="Excluir o banner “<%= b.title %>”? "><button class="icon-action danger" title="Excluir"><i class="bi bi-trash3"></i></button></form></div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+</div>
+<%- include('_foot') %>

@@ -15,7 +15,7 @@
           <span><i class="bi bi-whatsapp"></i><b>Orçamento pelo WhatsApp</b></span>
         </div>
       </div>
-      <% if(!settings.hero_background_path){ %><div class="hero-fallback"><img src="/img/logo.png" alt="ImpriMarte"></div><% } %>
+      <% if(!settings.hero_background_path){ %><div class="hero-fallback"><img src="<%= settings.site_logo_path || '/img/logo.png' %>" alt="ImpriMarte"></div><% } %>
     </div>
   </section>
 
@@ -32,7 +32,7 @@
     <div class="promo-main" <%- settings.promo_background_path ? `style="--promo-bg:url('${settings.promo_background_path}')"` : '' %>>
       <div class="promo-overlay"></div>
       <div class="promo-content"><small>PERSONALIZE SEM LIMITES</small><h2>Da sua ideia<br>para a realidade</h2><p>Produtos únicos para pessoas, empresas e momentos especiais.</p><a class="btn btn-light" href="/produtos">Ver todos os produtos <i class="bi bi-arrow-right"></i></a></div>
-      <% if(!settings.promo_background_path){ %><img class="promo-logo-art" src="/img/logo.png" alt=""><% } %>
+      <% if(!settings.promo_background_path){ %><img class="promo-logo-art" src="<%= settings.site_logo_path || '/img/logo.png' %>" alt=""><% } %>
     </div>
     <div class="promo-side">
       <a class="promo-mini" href="/categoria/brindes-corporativos"><i class="bi bi-gift"></i><div><h3>Brindes corporativos</h3><p>Sua marca sempre presente.</p><span>Ver opções <i class="bi bi-arrow-right"></i></span></div></a>

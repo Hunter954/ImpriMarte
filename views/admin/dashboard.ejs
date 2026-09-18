@@ -1,1 +1,45 @@
-<%- include('_head',{title}) %><div class="stats"><div><small>Produtos</small><strong><%= stats.products %></strong></div><div><small>Categorias</small><strong><%= stats.categories %></strong></div><div><small>Em destaque</small><strong><%= stats.featured %></strong></div></div><div class="admin-card"><h2>Começando</h2><p>Cadastre suas imagens e produtos, ajuste o número do WhatsApp e os textos principais. O site atualiza automaticamente.</p><div class="quick-links"><a class="admin-btn" href="/admin/produtos/novo">+ Novo produto</a><a class="admin-btn secondary" href="/admin/configuracoes">Configurar site</a></div></div><%- include('_foot') %>
+<%- include('_head',{title}) %>
+<section class="dashboard-welcome">
+  <div>
+    <span class="eyebrow-admin">CONTROLE DA LOJA</span>
+    <h2>Seu site, produtos e conteúdo em um só lugar.</h2>
+    <p>Gerencie o catálogo, organize categorias, publique banners e ajuste a identidade do site sem precisar editar código.</p>
+  </div>
+  <div class="welcome-actions">
+    <a class="admin-btn" href="/admin/produtos/novo"><i class="bi bi-plus-lg"></i> Cadastrar produto</a>
+    <a class="admin-btn ghost" href="/admin/configuracoes"><i class="bi bi-sliders2"></i> Configurar site</a>
+  </div>
+</section>
+
+<section class="stats-grid">
+  <a href="/admin/produtos" class="stat-card"><span class="stat-icon orange"><i class="bi bi-box-seam"></i></span><div><small>Total de produtos</small><strong><%= stats.products %></strong><span><%= stats.active %> publicados</span></div></a>
+  <a href="/admin/produtos?status=featured" class="stat-card"><span class="stat-icon purple"><i class="bi bi-star-fill"></i></span><div><small>Em destaque</small><strong><%= stats.featured %></strong><span>na página inicial</span></div></a>
+  <a href="/admin/categorias" class="stat-card"><span class="stat-icon blue"><i class="bi bi-tags"></i></span><div><small>Categorias ativas</small><strong><%= stats.categories %></strong><span>organizando o catálogo</span></div></a>
+  <a href="/admin/banners" class="stat-card"><span class="stat-icon green"><i class="bi bi-images"></i></span><div><small>Banners ativos</small><strong><%= stats.banners %></strong><span>publicados no site</span></div></a>
+</section>
+
+<div class="dashboard-grid">
+  <section class="admin-card panel-card">
+    <div class="card-head"><div><span class="card-kicker">CATÁLOGO</span><h3>Produtos atualizados recentemente</h3></div><a class="text-link" href="/admin/produtos">Ver todos <i class="bi bi-arrow-right"></i></a></div>
+    <% if (!recent.length) { %><div class="empty-admin"><i class="bi bi-box-seam"></i><h4>Nenhum produto ainda</h4><p>Cadastre o primeiro item do catálogo.</p><a class="admin-btn compact" href="/admin/produtos/novo">Novo produto</a></div><% } %>
+    <div class="recent-products">
+      <% recent.forEach(p=>{ %>
+        <a class="recent-product" href="/admin/produtos/<%= p.id %>/editar">
+          <div class="recent-thumb"><% if(p.image_path){%><img src="<%= p.image_path %>" alt=""><%}else{%><i class="bi bi-image"></i><%}%></div>
+          <div class="recent-info"><strong><%= p.name %></strong><span><%= p.category_name || 'Sem categoria' %></span></div>
+          <div class="recent-meta"><b><%= p.price_from ? formatBRL(p.price_from) : 'Sob consulta' %></b><span class="status-dot <%= p.active?'active':'inactive' %>"><%= p.active?'Ativo':'Rascunho' %></span></div>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      <% }) %>
+    </div>
+  </section>
+
+  <aside class="admin-card checklist-card">
+    <div class="card-head"><div><span class="card-kicker">ATALHOS</span><h3>Gerenciamento rápido</h3></div></div>
+    <a href="/admin/produtos/novo"><span><i class="bi bi-plus-circle"></i></span><div><strong>Novo produto</strong><small>Preço, imagem e categoria</small></div><i class="bi bi-chevron-right"></i></a>
+    <a href="/admin/banners"><span><i class="bi bi-card-image"></i></span><div><strong>Banners da home</strong><small>Campanhas e destaques</small></div><i class="bi bi-chevron-right"></i></a>
+    <a href="/admin/configuracoes"><span><i class="bi bi-palette"></i></span><div><strong>Identidade do site</strong><small>Logo, favicon e imagens</small></div><i class="bi bi-chevron-right"></i></a>
+    <a href="/" target="_blank"><span><i class="bi bi-window"></i></span><div><strong>Conferir site</strong><small>Visualizar página pública</small></div><i class="bi bi-box-arrow-up-right"></i></a>
+  </aside>
+</div>
+<%- include('_foot') %>

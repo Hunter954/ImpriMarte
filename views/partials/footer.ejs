@@ -1,6 +1,6 @@
 <footer class="site-footer">
   <div class="container footer-grid">
-    <div class="footer-brand-col"><img class="footer-logo" src="/img/logo.png" alt="ImpriMarte"><p><%= settings.footer_note || '' %></p></div>
+    <div class="footer-brand-col"><img class="footer-logo" src="<%= settings.site_logo_path || '/img/logo.png' %>" alt="ImpriMarte"><p><%= settings.footer_note || '' %></p></div>
     <div><h4>Institucional</h4><a href="/sobre">Sobre nós</a><a href="/contato">Contato</a><a href="/privacidade">Privacidade</a><a href="/termos">Termos</a></div>
     <div><h4>Atendimento</h4><a class="wa-link" href="#" data-whatsapp><i class="bi bi-whatsapp"></i> Falar no WhatsApp</a><a href="/produtos"><i class="bi bi-grid"></i> Ver produtos</a><a href="/carrinho"><i class="bi bi-bag"></i> Meu carrinho</a></div>
   </div>
@@ -12,6 +12,6 @@
   <a href="/carrinho"><i class="bi bi-bag"></i><span>Carrinho</span></a>
   <a href="/contato"><i class="bi bi-whatsapp"></i><span>Contato</span></a>
 </div>
-<script>window.IMPRIMARTE_WHATSAPP='<%= settings.whatsapp_number || '' %>';</script>
+<script>window.IMPRIMARTE_WHATSAPP='<%= settings.whatsapp_number || '' %>';window.IMPRIMARTE_LOGO='<%= settings.site_logo_path || '/img/logo.png' %>';</script>
 <script src="/js/site.js"></script>
 </body></html>

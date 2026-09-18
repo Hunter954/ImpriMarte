@@ -1,1 +1,40 @@
-<%- include('_head',{title}) %><div class="admin-two"><form class="admin-card" method="post"><h2>Nova categoria</h2><label>Nome<input name="name" required></label><label>Slug<input name="slug"></label><label>Ícone (nome livre)<input name="icon" value="grid"></label><label>Ordem<input name="sort_order" type="number" value="0"></label><label class="check"><input name="active" type="checkbox" checked> Ativa</label><button class="admin-btn">Adicionar</button></form><div class="admin-card"><h2>Categorias</h2><div class="category-admin-list"><% categories.forEach(c=>{ %><form method="post" action="/admin/categorias/<%= c.id %>/editar" class="category-row"><input name="name" value="<%= c.name %>"><input name="slug" value="<%= c.slug %>"><input name="icon" value="<%= c.icon %>"><input name="sort_order" type="number" value="<%= c.sort_order %>"><label><input name="active" type="checkbox" <%= c.active?'checked':'' %>> ativa</label><button>Salvar</button></form><form method="post" action="/admin/categorias/<%= c.id %>/excluir" onsubmit="return confirm('Excluir categoria? Os produtos ficarão sem categoria.')"><button class="danger">Excluir</button></form><hr><% }) %></div></div></div><%- include('_foot') %>
+<%- include('_head',{title}) %>
+<div class="page-intro">
+  <div><h2>Categorias do catálogo</h2><p>Organize a navegação do site e defina o ícone usado em cada categoria.</p></div>
+</div>
+<div class="admin-split-layout">
+  <section class="admin-card form-section side-create-card">
+    <div class="section-title"><span class="section-icon"><i class="bi bi-tag"></i></span><div><h3>Nova categoria</h3><p>Crie uma nova seção para organizar seus produtos.</p></div></div>
+    <form method="post" class="stack-form">
+      <label><span>Nome</span><input name="name" required placeholder="Ex.: Presentes personalizados"></label>
+      <label><span>Slug</span><input name="slug" placeholder="gerado automaticamente"></label>
+      <label><span>Ícone Bootstrap</span><div class="icon-input"><i class="bi bi-grid"></i><input name="icon" value="grid" placeholder="gift, tag, book..."></div><small>Exemplos: gift, tag, book, party, home, sticker, palette.</small></label>
+      <label><span>Ordem</span><input name="sort_order" type="number" value="0"></label>
+      <label class="switch-row"><div><strong>Categoria ativa</strong><small>Exibir no site</small></div><span class="switch"><input name="active" type="checkbox" checked><i></i></span></label>
+      <button class="admin-btn full-btn" type="submit"><i class="bi bi-plus-lg"></i> Adicionar categoria</button>
+    </form>
+  </section>
+
+  <section class="admin-card">
+    <div class="card-head"><div><span class="card-kicker">ORGANIZAÇÃO</span><h3>Categorias cadastradas</h3></div><span class="count-badge"><%= categories.length %> categorias</span></div>
+    <div class="category-cards">
+      <% categories.forEach(c=>{ const iconClass = adminIconMap[c.icon] || (c.icon && c.icon.startsWith('bi-') ? c.icon : 'bi-grid'); %>
+        <div class="category-card-admin">
+          <div class="category-card-icon"><i class="bi <%= iconClass %>"></i></div>
+          <form method="post" action="/admin/categorias/<%= c.id %>/editar" class="category-edit-form">
+            <div class="category-card-head"><div><strong><%= c.name %></strong><span><%= c.product_count %> produto(s)</span></div><span class="badge <%= c.active?'on':'off' %>"><%= c.active?'Ativa':'Inativa' %></span></div>
+            <div class="category-fields">
+              <label><span>Nome</span><input name="name" value="<%= c.name %>"></label>
+              <label><span>Slug</span><input name="slug" value="<%= c.slug %>"></label>
+              <label><span>Ícone</span><input name="icon" value="<%= c.icon %>"></label>
+              <label><span>Ordem</span><input name="sort_order" type="number" value="<%= c.sort_order %>"></label>
+            </div>
+            <div class="category-card-actions"><label class="check"><input name="active" type="checkbox" <%= c.active?'checked':'' %>> Exibir no site</label><button class="admin-btn compact" type="submit"><i class="bi bi-check2"></i> Salvar</button></div>
+          </form>
+          <form method="post" action="/admin/categorias/<%= c.id %>/excluir" data-confirm="Excluir a categoria “<%= c.name %>”? Os produtos ficarão sem categoria."><button class="icon-action danger category-delete" title="Excluir"><i class="bi bi-trash3"></i></button></form>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+</div>
+<%- include('_foot') %>

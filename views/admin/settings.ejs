@@ -1,29 +1,65 @@
 <%- include('_head',{title}) %>
-<% if(saved){ %><div class="alert success">Configurações salvas.</div><% } %>
-<form class="admin-card form-grid" method="post" enctype="multipart/form-data">
-  <label>Nome do site<input name="site_name" value="<%= settings.site_name || '' %>"></label>
-  <label>WhatsApp (DDI+DDD+número)<input name="whatsapp_number" value="<%= settings.whatsapp_number || '' %>" placeholder="5545999999999"></label>
-  <label class="full">Chamada pequena do topo<input name="hero_kicker" value="<%= settings.hero_kicker || '' %>"></label>
-  <label class="full">Título principal<input name="hero_title" value="<%= settings.hero_title || '' %>"></label>
-  <label class="full">Texto principal<textarea name="hero_text"><%= settings.hero_text || '' %></textarea></label>
+<% if(saved){ %><div class="alert success auto-dismiss"><i class="bi bi-check-circle-fill"></i><span>Configurações salvas com sucesso.</span><button type="button" data-alert-close><i class="bi bi-x"></i></button></div><% } %>
+<div class="page-intro"><div><h2>Configurações do site</h2><p>Controle identidade visual, WhatsApp, conteúdo da home e redes sociais.</p></div><button class="admin-btn" type="submit" form="settingsForm"><i class="bi bi-check2"></i> Salvar alterações</button></div>
 
-  <div class="full admin-upload-block">
-    <div><strong>Imagem de fundo do banner principal</strong><small>Use uma imagem horizontal, preferencialmente 1600×650 px ou maior.</small></div>
-    <% if(settings.hero_background_path){ %><img class="admin-image-preview" src="<%= settings.hero_background_path %>" alt="Banner atual"><label class="check"><input type="checkbox" name="remove_hero_background"> Remover imagem atual</label><% } %>
-    <input type="file" name="hero_background" accept="image/png,image/jpeg,image/webp,image/gif">
+<form id="settingsForm" class="settings-layout" method="post" enctype="multipart/form-data">
+  <nav class="settings-nav admin-card">
+    <a href="#branding"><i class="bi bi-palette"></i><span>Marca e identidade</span></a>
+    <a href="#contact"><i class="bi bi-whatsapp"></i><span>Contato</span></a>
+    <a href="#home"><i class="bi bi-house"></i><span>Página inicial</span></a>
+    <a href="#social"><i class="bi bi-share"></i><span>Redes sociais</span></a>
+    <a href="#footer"><i class="bi bi-layout-text-window-reverse"></i><span>Rodapé</span></a>
+  </nav>
+
+  <div class="settings-content">
+    <section class="admin-card form-section" id="branding">
+      <div class="section-title"><span class="section-icon"><i class="bi bi-palette"></i></span><div><h3>Marca e identidade</h3><p>Logo principal, favicon e nome exibido pelo site.</p></div></div>
+      <div class="form-grid professional">
+        <label class="full"><span>Nome do site</span><input name="site_name" value="<%= settings.site_name || '' %>"></label>
+        <div class="asset-field">
+          <div class="asset-preview logo-preview"><img src="<%= settings.site_logo_path || '/img/logo.png' %>" alt="Logo atual"></div>
+          <div><strong>Logomarca do site</strong><p>PNG transparente recomendado. A imagem será usada no cabeçalho, rodapé e placeholders.</p><label class="upload-btn"><i class="bi bi-upload"></i> Alterar logomarca<input type="file" name="site_logo" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><% if(settings.site_logo_path){ %><label class="check"><input type="checkbox" name="remove_site_logo"> Voltar para logo padrão</label><% } %></div>
+        </div>
+        <div class="asset-field">
+          <div class="asset-preview favicon-preview"><img src="<%= settings.favicon_path || settings.site_logo_path || '/img/logo.png' %>" alt="Favicon atual"></div>
+          <div><strong>Favicon</strong><p>Ícone exibido na aba do navegador. Recomendado: PNG quadrado 512×512.</p><label class="upload-btn"><i class="bi bi-upload"></i> Alterar favicon<input type="file" name="favicon" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><% if(settings.favicon_path){ %><label class="check"><input type="checkbox" name="remove_favicon"> Remover favicon personalizado</label><% } %></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="admin-card form-section" id="contact">
+      <div class="section-title"><span class="section-icon"><i class="bi bi-whatsapp"></i></span><div><h3>Atendimento e WhatsApp</h3><p>Número usado nos botões de orçamento e carrinho.</p></div></div>
+      <label><span>WhatsApp (DDI + DDD + número)</span><div class="input-prefix"><span>+</span><input name="whatsapp_number" value="<%= settings.whatsapp_number || '' %>" placeholder="5545999999999"></div><small>Digite apenas números. Exemplo Brasil: 55 + DDD + telefone.</small></label>
+    </section>
+
+    <section class="admin-card form-section" id="home">
+      <div class="section-title"><span class="section-icon"><i class="bi bi-house"></i></span><div><h3>Página inicial</h3><p>Textos e imagens das principais áreas promocionais.</p></div></div>
+      <div class="form-grid professional">
+        <label class="full"><span>Chamada pequena do hero</span><input name="hero_kicker" value="<%= settings.hero_kicker || '' %>"></label>
+        <label class="full"><span>Título principal</span><input name="hero_title" value="<%= settings.hero_title || '' %>"></label>
+        <label class="full"><span>Texto principal</span><textarea name="hero_text" rows="4"><%= settings.hero_text || '' %></textarea></label>
+      </div>
+      <div class="settings-media-grid">
+        <div class="settings-media-card"><div class="settings-media-preview"><% if(settings.hero_background_path){ %><img src="<%= settings.hero_background_path %>" alt="Hero atual"><% } else { %><i class="bi bi-image"></i><span>Sem imagem personalizada</span><% } %></div><div><strong>Imagem do hero</strong><p>Banner principal. Recomendado: 1600×700 px.</p><input type="file" name="hero_background" accept="image/*"><% if(settings.hero_background_path){ %><label class="check"><input type="checkbox" name="remove_hero_background"> Remover atual</label><% } %></div></div>
+        <div class="settings-media-card"><div class="settings-media-preview"><% if(settings.promo_background_path){ %><img src="<%= settings.promo_background_path %>" alt="Promo atual"><% } else { %><i class="bi bi-image"></i><span>Sem imagem personalizada</span><% } %></div><div><strong>“Da sua ideia para a realidade”</strong><p>Imagem horizontal da seção promocional.</p><input type="file" name="promo_background" accept="image/*"><% if(settings.promo_background_path){ %><label class="check"><input type="checkbox" name="remove_promo_background"> Remover atual</label><% } %></div></div>
+      </div>
+      <label class="stack-label"><span>Texto da página Sobre</span><textarea name="about_text" rows="6"><%= settings.about_text || '' %></textarea></label>
+    </section>
+
+    <section class="admin-card form-section" id="social">
+      <div class="section-title"><span class="section-icon"><i class="bi bi-share"></i></span><div><h3>Redes sociais</h3><p>Links exibidos na página inicial e no rodapé.</p></div></div>
+      <div class="form-grid professional">
+        <label><span><i class="bi bi-instagram"></i> Instagram</span><input name="instagram_url" value="<%= settings.instagram_url || '' %>" placeholder="https://instagram.com/..."></label>
+        <label><span><i class="bi bi-facebook"></i> Facebook</span><input name="facebook_url" value="<%= settings.facebook_url || '' %>" placeholder="https://facebook.com/..."></label>
+        <label><span><i class="bi bi-tiktok"></i> TikTok</span><input name="tiktok_url" value="<%= settings.tiktok_url || '' %>" placeholder="https://tiktok.com/@..."></label>
+      </div>
+    </section>
+
+    <section class="admin-card form-section" id="footer">
+      <div class="section-title"><span class="section-icon"><i class="bi bi-layout-text-window-reverse"></i></span><div><h3>Rodapé</h3><p>Mensagem institucional exibida no final do site.</p></div></div>
+      <label><span>Texto do rodapé</span><input name="footer_note" value="<%= settings.footer_note || '' %>"></label>
+    </section>
+    <div class="settings-save"><button class="admin-btn" type="submit"><i class="bi bi-check2"></i> Salvar todas as configurações</button></div>
   </div>
-
-  <div class="full admin-upload-block">
-    <div><strong>Imagem de fundo — “Personalize sem limites”</strong><small>Use uma imagem horizontal para a seção “Da sua ideia para a realidade”.</small></div>
-    <% if(settings.promo_background_path){ %><img class="admin-image-preview" src="<%= settings.promo_background_path %>" alt="Imagem atual"><label class="check"><input type="checkbox" name="remove_promo_background"> Remover imagem atual</label><% } %>
-    <input type="file" name="promo_background" accept="image/png,image/jpeg,image/webp,image/gif">
-  </div>
-
-  <label class="full">Texto sobre<textarea name="about_text" rows="5"><%= settings.about_text || '' %></textarea></label>
-  <label>Instagram<input name="instagram_url" value="<%= settings.instagram_url || '' %>"></label>
-  <label>Facebook<input name="facebook_url" value="<%= settings.facebook_url || '' %>"></label>
-  <label>TikTok<input name="tiktok_url" value="<%= settings.tiktok_url || '' %>"></label>
-  <label>Rodapé<input name="footer_note" value="<%= settings.footer_note || '' %>"></label>
-  <div class="full form-actions"><button class="admin-btn">Salvar configurações</button></div>
 </form>
 <%- include('_foot') %>

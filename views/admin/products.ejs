@@ -1,1 +1,57 @@
-<%- include('_head',{title}) %><div class="toolbar"><p>Gerencie os itens exibidos no catálogo.</p><a class="admin-btn" href="/admin/produtos/novo">+ Novo produto</a></div><div class="admin-card table-wrap"><table><thead><tr><th>Produto</th><th>Categoria</th><th>Preço inicial</th><th>Status</th><th></th></tr></thead><tbody><% products.forEach(p=>{ %><tr><td><div class="product-cell"><% if(p.image_path){%><img src="<%= p.image_path %>"><%}%><div><strong><%= p.name %></strong><small>/<%= p.slug %></small></div></div></td><td><%= p.category_name || '—' %></td><td><%= p.price_from ? formatBRL(p.price_from) : 'Sob consulta' %></td><td><span class="badge <%= p.active?'on':'off' %>"><%= p.active?'Ativo':'Inativo' %></span></td><td class="actions"><a href="/admin/produtos/<%= p.id %>/editar">Editar</a><form method="post" action="/admin/produtos/<%= p.id %>/excluir" onsubmit="return confirm('Excluir este produto?')"><button>Excluir</button></form></td></tr><% }) %></tbody></table></div><%- include('_foot') %>
+<%- include('_head',{title}) %>
+<div class="page-intro">
+  <div><h2>Catálogo de produtos</h2><p>Cadastre, edite, duplique, publique ou remova produtos do site.</p></div>
+  <a class="admin-btn" href="/admin/produtos/novo"><i class="bi bi-plus-lg"></i> Novo produto</a>
+</div>
+
+<div class="mini-stats">
+  <a href="/admin/produtos" class="<%= !filters.status?'active':'' %>"><b><%= counts.total %></b><span>Todos</span></a>
+  <a href="/admin/produtos?status=active" class="<%= filters.status==='active'?'active':'' %>"><b><%= counts.active %></b><span>Ativos</span></a>
+  <a href="/admin/produtos?status=inactive" class="<%= filters.status==='inactive'?'active':'' %>"><b><%= counts.inactive %></b><span>Inativos</span></a>
+  <a href="/admin/produtos?status=featured" class="<%= filters.status==='featured'?'active':'' %>"><b><%= counts.featured %></b><span>Destaques</span></a>
+</div>
+
+<section class="admin-card">
+  <form class="filter-bar" method="get">
+    <div class="search-field"><i class="bi bi-search"></i><input name="q" value="<%= filters.q %>" placeholder="Buscar produto, slug ou descrição..."></div>
+    <select name="category">
+      <option value="">Todas as categorias</option>
+      <% categories.forEach(c=>{ %><option value="<%= c.id %>" <%= String(filters.category)===String(c.id)?'selected':'' %>><%= c.name %></option><% }) %>
+    </select>
+    <select name="status">
+      <option value="">Qualquer status</option><option value="active" <%= filters.status==='active'?'selected':'' %>>Ativos</option><option value="inactive" <%= filters.status==='inactive'?'selected':'' %>>Inativos</option><option value="featured" <%= filters.status==='featured'?'selected':'' %>>Em destaque</option>
+    </select>
+    <button class="filter-submit" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
+    <% if(filters.q || filters.category || filters.status){ %><a class="filter-clear" href="/admin/produtos"><i class="bi bi-x-circle"></i> Limpar</a><% } %>
+  </form>
+
+  <% if(!products.length){ %><div class="empty-admin"><i class="bi bi-search"></i><h4>Nenhum produto encontrado</h4><p>Ajuste os filtros ou cadastre um novo produto.</p></div><% } else { %>
+  <div class="product-admin-list">
+    <div class="product-list-head"><span>Produto</span><span>Categoria</span><span>Preço</span><span>Visibilidade</span><span></span></div>
+    <% products.forEach(p=>{ %>
+      <div class="product-admin-row">
+        <div class="product-main-cell">
+          <div class="admin-product-image"><% if(p.image_path){%><img src="<%= p.image_path %>" alt=""><%}else{%><img src="<%= adminSettings.site_logo_path || '/img/logo.png' %>" class="logo-fallback" alt=""><%}%></div>
+          <div><a href="/admin/produtos/<%= p.id %>/editar"><strong><%= p.name %></strong></a><small>/<%= p.slug %></small></div>
+        </div>
+        <div data-label="Categoria"><span class="soft-pill"><i class="bi bi-tag"></i> <%= p.category_name || 'Sem categoria' %></span></div>
+        <div data-label="Preço"><strong class="price-cell"><%= p.price_from ? formatBRL(p.price_from) : 'Sob consulta' %></strong></div>
+        <div data-label="Visibilidade" class="visibility-cell"><span class="badge <%= p.active?'on':'off' %>"><i class="bi <%= p.active?'bi-check-circle-fill':'bi-circle' %>"></i> <%= p.active?'Ativo':'Inativo' %></span><% if(p.featured){%><span class="badge featured"><i class="bi bi-star-fill"></i> Destaque</span><%}%></div>
+        <div class="row-actions">
+          <a class="icon-action" href="/produto/<%= p.slug %>" target="_blank" title="Visualizar"><i class="bi bi-eye"></i></a>
+          <a class="icon-action" href="/admin/produtos/<%= p.id %>/editar" title="Editar"><i class="bi bi-pencil"></i></a>
+          <button class="icon-action" type="button" data-menu-button="product-menu-<%= p.id %>" title="Mais ações"><i class="bi bi-three-dots-vertical"></i></button>
+          <div class="action-menu" id="product-menu-<%= p.id %>">
+            <form method="post" action="/admin/produtos/<%= p.id %>/duplicar"><button><i class="bi bi-copy"></i> Duplicar produto</button></form>
+            <form method="post" action="/admin/produtos/<%= p.id %>/status"><button><i class="bi <%= p.active?'bi-eye-slash':'bi-eye' %>"></i> <%= p.active?'Desativar':'Publicar' %></button></form>
+            <form method="post" action="/admin/produtos/<%= p.id %>/destaque"><button><i class="bi bi-star"></i> <%= p.featured?'Remover destaque':'Destacar na home' %></button></form>
+            <hr>
+            <form method="post" action="/admin/produtos/<%= p.id %>/excluir" data-confirm="Excluir “<%= p.name %>”? Esta ação não pode ser desfeita."><button class="danger"><i class="bi bi-trash3"></i> Excluir produto</button></form>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+  <% } %>
+</section>
+<%- include('_foot') %>

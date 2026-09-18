@@ -129,6 +129,8 @@ async function initDb() {
     facebook_url: '#',
     tiktok_url: '#',
     footer_note: 'Feito com carinho para transformar suas ideias em algo único.',
+    site_logo_path: '',
+    favicon_path: '',
     hero_background_path: '',
     promo_background_path: ''
   };
