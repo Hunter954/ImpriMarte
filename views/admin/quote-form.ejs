@@ -5,7 +5,7 @@
 <% if (error) { %><div class="alert error"><i class="bi bi-exclamation-triangle-fill"></i><span><%= error %></span></div><% } %>
 <form method="post" action="/admin/orcamentos/novo" class="quote-builder" data-quote-calculator
   data-sheet-width="<%= config.sheetWidth %>" data-sheet-height="<%= config.sheetHeight %>" data-max-print-width="<%= config.maxPrintWidth %>" data-spacing="<%= config.spacing %>"
-  data-cut-meter="<%= config.cutLinearMeterPrice %>" data-no-cut-meter="<%= config.noCutLinearMeterPrice %>" data-min-cut="<%= config.minimumCutPrice %>" data-min-no-cut="<%= config.minimumNoCutPrice %>">
+  data-cut-sheet="<%= config.cutSheetPrice %>" data-no-cut-sheet="<%= config.noCutSheetPrice %>" data-cut-three="<%= config.cutThreeSheetPrice %>" data-no-cut-three="<%= config.noCutThreeSheetPrice %>">
   <div class="quote-form-column">
     <section class="admin-card quote-section">
       <div class="card-head"><div><span class="card-kicker">1. CLIENTE</span><h3>Identificação</h3></div></div>

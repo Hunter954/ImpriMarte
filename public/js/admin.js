@@ -73,10 +73,10 @@
     sheetHeight:n(root.dataset.sheetHeight,42),
     maxPrintWidth:n(root.dataset.maxPrintWidth,48),
     spacing:n(root.dataset.spacing,0),
-    cutMeter:n(root.dataset.cutMeter,120),
-    noCutMeter:n(root.dataset.noCutMeter,108),
-    minCut:n(root.dataset.minCut,40),
-    minNoCut:n(root.dataset.minNoCut,36)
+    cutSheet:n(root.dataset.cutSheet,40),
+    noCutSheet:n(root.dataset.noCutSheet,36),
+    cutThree:n(root.dataset.cutThree,140),
+    noCutThree:n(root.dataset.noCutThree,120)
   };
 
   const $=s=>root.querySelector(s);
@@ -137,18 +137,36 @@
     return rectLayout(cfg.maxPrintWidth,w,h,qty,cfg.spacing);
   }
 
+  function calibratedSquareCapacity(sh,w,h){
+    if(sh!=='rectangle' || Math.abs(w-h)>.001) return null;
+    const key=Math.round(w*10)/10;
+    const known={2:247,3:117,4:63,5:35,6:24,7:15,8:12,9:12,10:6};
+    return Object.prototype.hasOwnProperty.call(known,key)?known[key]:null;
+  }
+
   function capacityA3(sh,w,h){
+    const calibrated=calibratedSquareCapacity(sh,w,h);
+    if(calibrated) return calibrated;
     const W=cfg.sheetWidth,H=cfg.sheetHeight,g=cfg.spacing;
     const countRect=(iw,ih)=>Math.max(0,Math.floor((W+g)/(iw+g))*Math.floor((H+g)/(ih+g)));
     if(sh==='circle'){
-      const d=w+g, pitch=Math.sqrt(3)/2*d; const rows=H>=w?1+Math.floor((H-w)/pitch):0; let total=0;
-      for(let r=0;r<rows;r++){const off=r%2?d/2:0; if(W-off>=w) total += 1+Math.floor((W-off-w)/d);} return Math.max(1,total);
+      const d=w+g,pitch=Math.sqrt(3)/2*d; const rows=H>=w?1+Math.floor((H-w)/pitch):0; let total=0;
+      for(let r=0;r<rows;r++){const off=r%2?d/2:0;if(W-off>=w)total+=1+Math.floor((W-off-w)/d);}return Math.max(1,total);
     }
     if(sh==='triangle'){
-      const one=(base,height)=>{if(W<base||H<height)return 0;const across=1+Math.floor((W-base)/(base/2+g));const rows=1+Math.floor((H-height)/(height+g));return across*rows;};
+      const one=(base,height)=>{if(W<base||H<height)return 0;const across=1+Math.floor((W-base)/(base/2+g)),rows=1+Math.floor((H-height)/(height+g));return across*rows;};
       return Math.max(1,one(w,h),one(h,w));
     }
     return Math.max(1,countRect(w,h),countRect(h,w));
+  }
+
+  function priceBySheets(sheets,cut){
+    const unit=cut?cfg.cutSheet:cfg.noCutSheet;
+    const three=cut?cfg.cutThree:cfg.noCutThree;
+    if(sheets<=1) return unit;
+    if(sheets===2) return unit*2;
+    if(sheets===3) return three;
+    return three+(sheets-3)*unit;
   }
 
   function labels(sh){
@@ -247,41 +265,33 @@
   function update(){
     const sh=shape();
     labels(sh);
-    const w=Math.max(.1, n(fields.width.value, 5));
+    const w=Math.max(.1,n(fields.width.value,5));
     if(sh==='circle') fields.height.value=w;
-    const h=Math.max(.1, n(fields.height.value, w));
-    const qty=Math.max(1, Math.ceil(n(fields.qty.value, 1)));
+    const h=Math.max(.1,n(fields.height.value,w));
+    const qty=Math.max(1,Math.ceil(n(fields.qty.value,1)));
     const cut=fields.cut.checked;
     const lay=layout(sh,w,h,qty);
-    if(!lay){
-      outputs.total.textContent='Medida inválida';
-      outputs.unit.textContent='A largura excede a boca útil';
-      outputs.note.innerHTML='A peça informada não cabe na largura útil configurada da máquina.';
-      return;
-    }
-
-    const meter=cut?cfg.cutMeter:cfg.noCutMeter;
-    const minimum=cut?cfg.minCut:cfg.minNoCut;
-    const raw=lay.length/100*meter;
-    const total=Math.max(minimum, raw);
-    const method=sh==='circle' ? 'Encaixe intercalado (hexagonal)'
-      : sh==='triangle' ? 'Triângulos alternados (em pé / invertido)'
-      : sh==='custom' ? 'Caixa delimitadora conservadora'
-      : (lay.rotated ? 'Grade otimizada com rotação automática' : 'Grade otimizada na boca de 48 cm');
-
+    if(!lay){outputs.total.textContent='Medida inválida';outputs.unit.textContent='A largura excede a boca útil';outputs.note.innerHTML='A peça informada não cabe na largura útil configurada da máquina.';return}
+    const cap=capacityA3(sh,w,h);
+    const sheets=Math.max(1,Math.ceil(qty/cap));
+    const total=priceBySheets(sheets,cut);
+    const unitSheet=cut?cfg.cutSheet:cfg.noCutSheet;
+    const threePrice=cut?cfg.cutThree:cfg.noCutThree;
+    const method=sh==='circle'?'Encaixe intercalado (hexagonal)':sh==='triangle'?'Triângulos alternados (em pé / invertido)':sh==='custom'?'Caixa delimitadora conservadora':(calibratedSquareCapacity(sh,w,h)?'Capacidade A3 calibrada pela produção real':(lay.rotated?'Grade otimizada com rotação automática':'Grade otimizada'));
     outputs.total.textContent=money(total);
     outputs.unit.textContent=`${money(total/qty)} por unidade`;
     outputs.across.textContent=String(lay.across);
     outputs.length.textContent=`${lay.length.toFixed(1).replace('.',',')} cm`;
     outputs.widthUsed.textContent=`${cfg.maxPrintWidth.toLocaleString('pt-BR')} cm`;
-    outputs.sheets.textContent=String(Math.max(1, Math.ceil(lay.length/cfg.sheetHeight)));
-    outputs.a3Capacity.textContent=`${capacityA3(sh,w,h)} un.`;
+    outputs.sheets.textContent=String(sheets);
+    outputs.a3Capacity.textContent=`${cap} un.`;
     outputs.cutLabel.textContent=cut?'Com recorte':'Sem recorte';
     outputs.method.textContent=method;
-    outputs.note.innerHTML=`Comprimento usado: <strong>${lay.length.toFixed(1).replace('.',',')} cm</strong> × <strong>${money(meter)}/m</strong>${raw<minimum?` · mínimo aplicado <strong>${money(minimum)}</strong>`:''}.`;
+    outputs.note.innerHTML=sheets===3
+      ? `<strong>${cap} adesivos por A3</strong> · ${qty} unidades = <strong>3 A3</strong> · pacote de 3 = <strong>${money(threePrice)}</strong>.`
+      : `<strong>${cap} adesivos por A3</strong> · ${qty} unidades = <strong>${sheets} A3</strong> · ${money(unitSheet)} por folha${sheets>3?' (após o pacote de 3)':''}.`;
     drawPreview(sh,w,h,lay);
   }
-
   root.querySelectorAll('input').forEach(el=>el.addEventListener('input',update));
   root.querySelectorAll('input[name="shape"]').forEach(el=>el.addEventListener('change',update));
   window.addEventListener('resize',()=>{clearTimeout(window.__quoteResize); window.__quoteResize=setTimeout(update,120);});

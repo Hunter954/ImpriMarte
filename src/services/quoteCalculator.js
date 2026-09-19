@@ -75,7 +75,29 @@ function buildLayout({ shape, width, height, maxPrintWidth, spacing, quantity })
   return rectLayout(printWidth, w, h, qty, gap);
 }
 
+function calibratedSquareCapacity(width, height, shape) {
+  const w = num(width);
+  const h = num(height, w);
+  if (!['rectangle', 'square'].includes(shape) || Math.abs(w - h) > 0.001) return null;
+  const rounded = Math.round(w * 10) / 10;
+  const known = {
+    2: 247,
+    3: 117,
+    4: 63,
+    5: 35,
+    6: 24,
+    7: 15,
+    8: 12,
+    9: 12,
+    10: 6
+  };
+  return Object.prototype.hasOwnProperty.call(known, rounded) ? known[rounded] : null;
+}
+
 function calculateA3Capacity({ shape, width, height, sheetWidth, sheetHeight, spacing }) {
+  const calibrated = calibratedSquareCapacity(width, height, shape);
+  if (calibrated) return calibrated;
+
   const W = Math.max(0.01, num(sheetWidth, 29.7));
   const H = Math.max(0.01, num(sheetHeight, 42));
   const w = Math.max(0.01, num(width));
@@ -113,6 +135,15 @@ function calculateA3Capacity({ shape, width, height, sheetWidth, sheetHeight, sp
   return Math.max(1, countRect(w, h), countRect(h, w));
 }
 
+function priceBySheets(sheetCount, withCut, cfg) {
+  const unit = withCut ? cfg.cutSheetPrice : cfg.noCutSheetPrice;
+  const three = withCut ? cfg.cutThreeSheetPrice : cfg.noCutThreeSheetPrice;
+  if (sheetCount <= 1) return unit;
+  if (sheetCount === 2) return unit * 2;
+  if (sheetCount === 3) return three;
+  return three + (sheetCount - 3) * unit;
+}
+
 function calculateQuote(input, config) {
   const quantity = Math.max(1, Math.ceil(num(input.quantity, 1)));
   const shape = input.shape || 'rectangle';
@@ -122,10 +153,10 @@ function calculateQuote(input, config) {
     sheetHeight: num(config.sheetHeight, 42),
     maxPrintWidth: num(config.maxPrintWidth, 48),
     spacing: num(config.spacing, 0),
-    cutLinearMeterPrice: num(config.cutLinearMeterPrice, 120),
-    noCutLinearMeterPrice: num(config.noCutLinearMeterPrice, 108),
-    minimumCutPrice: num(config.minimumCutPrice, 40),
-    minimumNoCutPrice: num(config.minimumNoCutPrice, 36)
+    cutSheetPrice: num(config.cutSheetPrice, 40),
+    noCutSheetPrice: num(config.noCutSheetPrice, 36),
+    cutThreeSheetPrice: num(config.cutThreeSheetPrice, 140),
+    noCutThreeSheetPrice: num(config.noCutThreeSheetPrice, 120)
   };
 
   const layout = buildLayout({
@@ -141,12 +172,6 @@ function calculateQuote(input, config) {
     throw new Error('A medida informada é maior que a largura útil disponível para impressão.');
   }
 
-  const linearMeterPrice = withCut ? cfg.cutLinearMeterPrice : cfg.noCutLinearMeterPrice;
-  const minimum = withCut ? cfg.minimumCutPrice : cfg.minimumNoCutPrice;
-  const rawTotal = (layout.length / 100) * linearMeterPrice;
-  const total = Math.round((Math.max(minimum, rawTotal) + Number.EPSILON) * 100) / 100;
-  const unitPrice = total / quantity;
-
   const capacityA3 = calculateA3Capacity({
     shape,
     width: input.width,
@@ -156,7 +181,9 @@ function calculateQuote(input, config) {
     spacing: cfg.spacing
   });
 
-  const equivalentA3 = Math.max(1, Math.ceil(layout.length / cfg.sheetHeight));
+  const sheets = Math.max(1, Math.ceil(quantity / capacityA3));
+  const total = priceBySheets(sheets, withCut, cfg);
+  const unitPrice = total / quantity;
 
   const method = shape === 'circle'
     ? 'Encaixe intercalado (hexagonal)'
@@ -164,9 +191,13 @@ function calculateQuote(input, config) {
       ? 'Triângulos alternados (em pé / invertido)'
       : shape === 'custom'
         ? 'Caixa delimitadora conservadora'
-        : (layout.rotated ? 'Grade otimizada com rotação automática' : 'Grade otimizada na boca de 48 cm');
+        : (calibratedSquareCapacity(input.width, input.height, shape) ? 'Capacidade A3 calibrada pela produção real' : (layout.rotated ? 'Grade otimizada com rotação automática' : 'Grade otimizada'));
 
-  const pricingRule = `Comprimento usado: ${layout.length.toFixed(1)} cm × ${linearMeterPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/m${rawTotal < minimum ? ` · mínimo aplicado ${minimum.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}.`;
+  const sheetPrice = withCut ? cfg.cutSheetPrice : cfg.noCutSheetPrice;
+  const threePrice = withCut ? cfg.cutThreeSheetPrice : cfg.noCutThreeSheetPrice;
+  const pricingRule = sheets === 3
+    ? `${capacityA3} por A3 · ${sheets} A3 necessárias · pacote de 3 A3 = ${threePrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.`
+    : `${capacityA3} por A3 · ${sheets} A3 necessária${sheets > 1 ? 's' : ''} · ${sheetPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} por A3${sheets > 3 ? `, com pacote-base de 3 A3` : ''}.`;
 
   return {
     quantity,
@@ -174,15 +205,12 @@ function calculateQuote(input, config) {
     withCut,
     total,
     unitPrice,
-    linearMeterPrice,
-    minimum,
-    rawTotal: Math.round((rawTotal + Number.EPSILON) * 100) / 100,
     across: layout.across,
     rows: layout.rows,
     usedLengthCm: layout.length,
-    producedCapacity: layout.across * layout.rows,
-    wasteUnits: Math.max(0, layout.across * layout.rows - quantity),
-    equivalentA3,
+    producedCapacity: capacityA3 * sheets,
+    wasteUnits: Math.max(0, capacityA3 * sheets - quantity),
+    equivalentA3: sheets,
     capacityA3,
     method,
     pricingRule,
@@ -191,4 +219,4 @@ function calculateQuote(input, config) {
   };
 }
 
-module.exports = { calculateQuote, buildLayout, calculateA3Capacity };
+module.exports = { calculateQuote, buildLayout, calculateA3Capacity, calibratedSquareCapacity };

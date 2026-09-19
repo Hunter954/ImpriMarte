@@ -304,10 +304,10 @@ function quoteConfigFromSettings(settings) {
     sheetHeight: positive(settings.quote_sheet_height_cm, 42),
     maxPrintWidth: positive(settings.quote_max_print_width_cm, 48),
     spacing: nonNegative(settings.quote_spacing_cm, 0),
-    cutLinearMeterPrice: positive(settings.quote_cut_linear_meter_price, 120),
-    noCutLinearMeterPrice: positive(settings.quote_no_cut_linear_meter_price, 108),
-    minimumCutPrice: positive(settings.quote_minimum_cut_price, 40),
-    minimumNoCutPrice: positive(settings.quote_minimum_no_cut_price, 36)
+    cutSheetPrice: positive(settings.quote_cut_sheet_price, 40),
+    noCutSheetPrice: positive(settings.quote_no_cut_sheet_price, 36),
+    cutThreeSheetPrice: positive(settings.quote_cut_three_sheet_price, 140),
+    noCutThreeSheetPrice: positive(settings.quote_no_cut_three_sheet_price, 120)
   };
 }
 
@@ -366,7 +366,7 @@ router.get('/orcamentos/configuracoes', async (req,res,next)=>{
 router.post('/orcamentos/configuracoes', async (req,res,next)=>{
   try {
     if (req.session.userRole !== 'admin') return res.redirect('/admin/orcamentos');
-    const defaults={quote_sheet_width_cm:29.7,quote_sheet_height_cm:42,quote_max_print_width_cm:48,quote_spacing_cm:0,quote_cut_linear_meter_price:120,quote_no_cut_linear_meter_price:108,quote_minimum_cut_price:40,quote_minimum_no_cut_price:36};
+    const defaults={quote_sheet_width_cm:29.7,quote_sheet_height_cm:42,quote_max_print_width_cm:48,quote_spacing_cm:0,quote_cut_sheet_price:40,quote_no_cut_sheet_price:36,quote_cut_three_sheet_price:140,quote_no_cut_three_sheet_price:120};
     for(const [key,fallback] of Object.entries(defaults)){
       const raw=String(req.body[key]??'').trim().replace(',','.');
       let value=Number(raw);

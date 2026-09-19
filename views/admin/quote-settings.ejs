@@ -3,7 +3,7 @@
   <div>
     <div class="breadcrumb-admin"><a href="/admin/orcamentos">Orçamentos</a><i class="bi bi-chevron-right"></i><span>Regras</span></div>
     <h2>Regras do calculador</h2>
-    <p>O cálculo usa a boca útil da impressora e o comprimento linear realmente ocupado.</p>
+    <p>O cálculo usa a capacidade real por A3, o formato e o encaixe. O preço é aplicado pela quantidade de folhas A3 necessárias.</p>
   </div>
 </section>
 <form method="post" class="quote-settings-grid">
@@ -18,19 +18,28 @@
   </section>
 
   <section class="admin-card quote-section">
-    <div class="card-head"><div><span class="card-kicker">COM RECORTE</span><h3>Preço por comprimento</h3></div></div>
+    <div class="card-head"><div><span class="card-kicker">COM RECORTE</span><h3>Preço por folha A3</h3></div></div>
     <div class="two-fields">
-      <label class="stack-label"><span>Preço por metro</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0.01" name="quote_cut_linear_meter_price" value="<%= config.cutLinearMeterPrice %>" required></div></label>
-      <label class="stack-label"><span>Valor mínimo</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0.01" name="quote_minimum_cut_price" value="<%= config.minimumCutPrice %>" required></div></label>
+      <label class="stack-label"><span>1 folha A3</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0.01" name="quote_cut_sheet_price" value="<%= config.cutSheetPrice %>" required></div></label>
+      <label class="stack-label"><span>Pacote de 3 folhas A3</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0.01" name="quote_cut_three_sheet_price" value="<%= config.cutThreeSheetPrice %>" required></div></label>
+    </div>
+    <p class="page-intro-note">2 folhas = 2 × valor unitário. A 3ª folha usa o pacote especial. A partir da 4ª, soma novamente o valor unitário por folha extra.</p>
+  </section>
+
+  <section class="admin-card quote-section">
+    <div class="card-head"><div><span class="card-kicker">SEM RECORTE</span><h3>Preço por folha A3</h3></div></div>
+    <div class="two-fields">
+      <label class="stack-label"><span>1 folha A3</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0.01" name="quote_no_cut_sheet_price" value="<%= config.noCutSheetPrice %>" required></div></label>
+      <label class="stack-label"><span>Pacote de 3 folhas A3</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0.01" name="quote_no_cut_three_sheet_price" value="<%= config.noCutThreeSheetPrice %>" required></div></label>
     </div>
   </section>
 
   <section class="admin-card quote-section">
-    <div class="card-head"><div><span class="card-kicker">SEM RECORTE</span><h3>Preço por comprimento</h3></div></div>
-    <div class="two-fields">
-      <label class="stack-label"><span>Preço por metro</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0.01" name="quote_no_cut_linear_meter_price" value="<%= config.noCutLinearMeterPrice %>" required></div></label>
-      <label class="stack-label"><span>Valor mínimo</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0.01" name="quote_minimum_no_cut_price" value="<%= config.minimumNoCutPrice %>" required></div></label>
+    <div class="card-head"><div><span class="card-kicker">CAPACIDADES CALIBRADAS</span><h3>Quadrados medidos na produção</h3></div></div>
+    <div class="calibration-list">
+      <span>2×2 <b>247/A3</b></span><span>3×3 <b>117/A3</b></span><span>4×4 <b>63/A3</b></span><span>5×5 <b>35/A3</b></span><span>6×6 <b>24/A3</b></span><span>7×7 <b>15/A3</b></span><span>8×8 <b>12/A3</b></span><span>9×9 <b>12/A3</b></span><span>10×10 <b>6/A3</b></span>
     </div>
+    <p class="page-intro-note">Para outras medidas, círculos, triângulos e formatos especiais, o sistema calcula o melhor encaixe automaticamente.</p>
   </section>
 
   <div class="quote-settings-actions"><a class="admin-btn ghost" href="/admin/orcamentos">Cancelar</a><button class="admin-btn" type="submit"><i class="bi bi-check2"></i> Salvar regras</button></div>

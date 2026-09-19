@@ -200,10 +200,10 @@ async function initDb() {
     quote_sheet_width_cm: '29.7',
     quote_sheet_height_cm: '42',
     quote_max_print_width_cm: '48',
-    quote_cut_linear_meter_price: '120',
-    quote_no_cut_linear_meter_price: '108',
-    quote_minimum_cut_price: '40',
-    quote_minimum_no_cut_price: '36'
+    quote_cut_sheet_price: '40',
+    quote_no_cut_sheet_price: '36',
+    quote_cut_three_sheet_price: '140',
+    quote_no_cut_three_sheet_price: '120'
   };
   for (const [key, fallback] of Object.entries(quotePositiveDefaults)) {
     const row = await query('SELECT value FROM settings WHERE key=$1', [key]);
