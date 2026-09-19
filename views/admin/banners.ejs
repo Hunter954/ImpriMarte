@@ -1,31 +1,30 @@
 <%- include('_head',{title}) %>
-<div class="page-intro">
-  <div><h2>Banners e campanhas</h2><p>Gerencie peças promocionais extras exibidas na página inicial.</p></div>
+<div class="page-intro banners-page-intro">
+  <div><h2>Banners e campanhas</h2><p>Gerencie os banners promocionais da home de forma mais visual e organizada.</p></div>
+  <% if(edit){ %><a class="admin-btn ghost" href="/admin/banners"><i class="bi bi-plus-lg"></i> Novo banner</a><% } %>
 </div>
-<div class="admin-split-layout banners-layout">
-  <section class="admin-card form-section side-create-card">
-    <div class="section-title"><span class="section-icon"><i class="bi bi-card-image"></i></span><div><h3><%= edit ? 'Editar banner' : 'Novo banner' %></h3><p>Imagem, chamada e link da campanha.</p></div></div>
-    <form method="post" enctype="multipart/form-data" action="<%= edit ? '/admin/banners/'+edit.id+'/editar' : '/admin/banners' %>" class="stack-form">
-      <label><span>Título</span><input name="title" value="<%= edit?.title || '' %>" required placeholder="Ex.: Especial Dia dos Professores"></label>
-      <label><span>Subtítulo</span><textarea name="subtitle" rows="3" placeholder="Texto de apoio"><%= edit?.subtitle || '' %></textarea></label>
-      <div class="two-fields"><label><span>Texto do botão</span><input name="button_text" value="<%= edit?.button_text || '' %>" placeholder="Ver produtos"></label><label><span>Link</span><input name="button_link" value="<%= edit?.button_link || '' %>" placeholder="/produtos"></label></div>
-      <div class="two-fields"><label><span>Posição</span><select name="position"><option value="home" <%= !edit || edit.position==='home'?'selected':'' %>>Home</option></select></label><label><span>Ordem</span><input name="sort_order" type="number" value="<%= edit?.sort_order || 0 %>"></label></div>
-      <label><span>Imagem</span><input type="file" name="image" accept="image/*" data-image-input></label>
-      <% if(edit?.image_path){ %><div class="banner-edit-preview"><img src="<%= edit.image_path %>" alt=""><label class="check"><input type="checkbox" name="remove_image"> Remover imagem atual</label></div><% } %>
-      <label class="switch-row"><div><strong>Banner ativo</strong><small>Exibir no site</small></div><span class="switch"><input name="active" type="checkbox" <%= !edit || edit.active?'checked':'' %>><i></i></span></label>
-      <div class="form-actions"><% if(edit){ %><a class="admin-btn ghost" href="/admin/banners">Cancelar</a><% } %><button class="admin-btn" type="submit"><i class="bi bi-check2"></i> <%= edit ? 'Salvar alterações' : 'Criar banner' %></button></div>
+
+<div class="banner-manager-layout">
+  <section class="admin-card form-section banner-editor-card">
+    <div class="section-title"><span class="section-icon"><i class="bi bi-card-image"></i></span><div><h3><%= edit ? 'Editar banner' : 'Novo banner' %></h3><p><%= edit ? 'Atualize a campanha selecionada.' : 'Monte uma nova campanha para a página inicial.' %></p></div></div>
+    <form method="post" enctype="multipart/form-data" action="<%= edit ? '/admin/banners/'+edit.id+'/editar' : '/admin/banners' %>" class="banner-form">
+      <div class="banner-form-section"><div class="form-section-caption"><i class="bi bi-type"></i><div><strong>Conteúdo</strong><small>Textos exibidos no banner.</small></div></div><div class="stack-form"><label><span>Título <b>*</b></span><input name="title" value="<%= edit?.title || '' %>" required placeholder="Ex.: Especial Dia dos Professores"></label><label><span>Subtítulo</span><textarea name="subtitle" rows="3" placeholder="Texto curto de apoio"><%= edit?.subtitle || '' %></textarea></label></div></div>
+      <div class="banner-form-section"><div class="form-section-caption"><i class="bi bi-cursor"></i><div><strong>Destino do botão</strong><small>Configure a ação da campanha.</small></div></div><div class="two-fields stack-form"><label><span>Texto do botão</span><input name="button_text" value="<%= edit?.button_text || '' %>" placeholder="Ver produtos"></label><label><span>Link</span><input name="button_link" value="<%= edit?.button_link || '' %>" placeholder="/produtos"></label></div></div>
+      <div class="banner-form-section"><div class="form-section-caption"><i class="bi bi-image"></i><div><strong>Imagem</strong><small>Use uma arte horizontal com boa resolução.</small></div></div><label class="banner-upload-box"><% if(edit?.image_path){ %><img src="<%= edit.image_path %>" alt="Banner atual" data-image-preview><% } else { %><div data-image-preview><i class="bi bi-cloud-arrow-up"></i><strong>Selecionar imagem</strong><span>PNG, JPG ou WEBP até 8 MB</span></div><% } %><input type="file" name="image" accept="image/*" data-image-input hidden><span class="admin-btn ghost"><i class="bi bi-upload"></i> Escolher arquivo</span></label><% if(edit?.image_path){ %><label class="check danger-check banner-remove-check"><input type="checkbox" name="remove_image"> Remover imagem atual</label><% } %></div>
+      <div class="banner-form-section"><div class="form-section-caption"><i class="bi bi-sliders"></i><div><strong>Publicação</strong><small>Defina posição, ordem e visibilidade.</small></div></div><div class="two-fields stack-form"><label><span>Posição</span><select name="position"><option value="home" <%= !edit || edit.position==='home'?'selected':'' %>>Página inicial</option></select></label><label><span>Ordem</span><input name="sort_order" type="number" value="<%= edit?.sort_order || 0 %>"></label></div><label class="switch-row banner-active-switch"><div><strong>Banner ativo</strong><small>Exibir esta campanha no site</small></div><span class="switch"><input name="active" type="checkbox" <%= !edit || edit.active?'checked':'' %>><i></i></span></label></div>
+      <div class="form-actions banner-form-actions"><% if(edit){ %><a class="admin-btn ghost" href="/admin/banners">Cancelar</a><% } %><button class="admin-btn" type="submit"><i class="bi bi-check2"></i> <%= edit ? 'Salvar alterações' : 'Criar banner' %></button></div>
     </form>
   </section>
 
-  <section class="admin-card">
-    <div class="card-head"><div><span class="card-kicker">CAMPANHAS</span><h3>Banners cadastrados</h3></div><span class="count-badge"><%= banners.length %> itens</span></div>
-    <% if(!banners.length){ %><div class="empty-admin"><i class="bi bi-images"></i><h4>Nenhum banner extra</h4><p>Crie uma campanha para aparecer na home.</p></div><% } %>
-    <div class="banner-admin-grid">
+  <section class="admin-card banner-list-card">
+    <div class="card-head"><div><span class="card-kicker">CAMPANHAS</span><h3>Banners cadastrados</h3><p class="card-help">Veja o status, ordem e destino sem precisar abrir cada item.</p></div><span class="count-badge"><%= banners.length %> itens</span></div>
+    <% if(!banners.length){ %><div class="empty-admin"><i class="bi bi-images"></i><h4>Nenhum banner extra</h4><p>Crie sua primeira campanha usando o formulário ao lado.</p></div><% } %>
+    <div class="banner-manager-list">
       <% banners.forEach(b=>{ %>
-        <article class="banner-admin-card">
-          <div class="banner-thumb"><% if(b.image_path){ %><img src="<%= b.image_path %>" alt=""><% } else { %><div><i class="bi bi-image"></i><span>Sem imagem</span></div><% } %><span class="badge <%= b.active?'on':'off' %>"><%= b.active?'Ativo':'Inativo' %></span></div>
-          <div class="banner-body"><div><strong><%= b.title %></strong><p><%= b.subtitle || 'Sem subtítulo' %></p></div><div class="banner-meta"><span><i class="bi bi-sort-numeric-down"></i> Ordem <%= b.sort_order %></span><span><i class="bi bi-link-45deg"></i> <%= b.button_link || 'Sem link' %></span></div></div>
-          <div class="banner-actions"><a class="admin-btn ghost compact" href="/admin/banners/<%= b.id %>/editar"><i class="bi bi-pencil"></i> Editar</a><form method="post" action="/admin/banners/<%= b.id %>/status"><button class="icon-action" title="Alternar status"><i class="bi <%= b.active?'bi-eye-slash':'bi-eye' %>"></i></button></form><form method="post" action="/admin/banners/<%= b.id %>/excluir" data-confirm="Excluir o banner “<%= b.title %>”? "><button class="icon-action danger" title="Excluir"><i class="bi bi-trash3"></i></button></form></div>
+        <article class="banner-manager-row <%= edit?.id===b.id?'selected':'' %>">
+          <div class="banner-list-thumb"><% if(b.image_path){ %><img src="<%= b.image_path %>" alt=""><% } else { %><i class="bi bi-image"></i><% } %></div>
+          <div class="banner-list-content"><div class="banner-title-line"><strong><%= b.title %></strong><span class="badge <%= b.active?'on':'off' %>"><%= b.active?'Ativo':'Inativo' %></span></div><p><%= b.subtitle || 'Sem subtítulo' %></p><div class="banner-list-meta"><span><i class="bi bi-sort-numeric-down"></i> Ordem <b><%= b.sort_order %></b></span><span><i class="bi bi-link-45deg"></i> <%= b.button_link || 'Sem link' %></span><span><i class="bi bi-layout-text-window"></i> <%= b.position==='home'?'Home':b.position %></span></div></div>
+          <div class="banner-row-actions"><a class="icon-action" href="/admin/banners/<%= b.id %>/editar" title="Editar"><i class="bi bi-pencil"></i></a><form method="post" action="/admin/banners/<%= b.id %>/status"><button class="icon-action" title="Alternar status"><i class="bi <%= b.active?'bi-eye-slash':'bi-eye' %>"></i></button></form><form method="post" action="/admin/banners/<%= b.id %>/excluir" data-confirm="Excluir o banner “<%= b.title %>”? "><button class="icon-action danger" title="Excluir"><i class="bi bi-trash3"></i></button></form></div>
         </article>
       <% }) %>
     </div>

@@ -108,13 +108,15 @@ router.get('/produtos/novo', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/produtos/novo', upload.single('image'), async (req, res, next) => {
+router.post('/produtos/novo', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'gallery', maxCount: 8 }]), async (req, res, next) => {
   try {
     const slug = slugify(req.body.slug || req.body.name, { lower: true, strict: true });
-    await query(`INSERT INTO products(category_id,name,slug,short_description,description,price_from,image_path,featured,active,sort_order)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, [
+    await query(`INSERT INTO products(category_id,name,slug,short_description,description,price_from,image_path,gallery,featured,active,sort_order)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, [
       req.body.category_id || null, req.body.name.trim(), slug, req.body.short_description || '', req.body.description || '', price(req.body.price_from),
-      req.file ? `/uploads/${req.file.filename}` : null, bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order)
+      req.files?.image?.[0] ? `/uploads/${req.files.image[0].filename}` : null,
+      JSON.stringify((req.files?.gallery || []).map(file => `/uploads/${file.filename}`)),
+      bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order)
     ]);
     res.redirect('/admin/produtos?ok=Produto criado com sucesso');
   } catch (err) { next(err); }
@@ -128,16 +130,21 @@ router.get('/produtos/:id/editar', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/produtos/:id/editar', upload.single('image'), async (req, res, next) => {
+router.post('/produtos/:id/editar', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'gallery', maxCount: 8 }]), async (req, res, next) => {
   try {
     const current = await query('SELECT * FROM products WHERE id=$1', [req.params.id]);
     if (!current.rowCount) return res.redirect('/admin/produtos');
     const slug = slugify(req.body.slug || req.body.name, { lower: true, strict: true });
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : (bool(req.body.remove_image) ? null : current.rows[0].image_path);
-    await query(`UPDATE products SET category_id=$1,name=$2,slug=$3,short_description=$4,description=$5,price_from=$6,image_path=$7,
-      featured=$8,active=$9,sort_order=$10,updated_at=NOW() WHERE id=$11`, [
+    const imagePath = req.files?.image?.[0] ? `/uploads/${req.files.image[0].filename}` : (bool(req.body.remove_image) ? null : current.rows[0].image_path);
+    const currentGallery = Array.isArray(current.rows[0].gallery) ? current.rows[0].gallery : [];
+    const removeGallery = Array.isArray(req.body.remove_gallery) ? req.body.remove_gallery : (req.body.remove_gallery ? [req.body.remove_gallery] : []);
+    const keptGallery = currentGallery.filter(item => !removeGallery.includes(item));
+    const newGallery = (req.files?.gallery || []).map(file => `/uploads/${file.filename}`);
+    const gallery = [...keptGallery, ...newGallery].slice(0, 8);
+    await query(`UPDATE products SET category_id=$1,name=$2,slug=$3,short_description=$4,description=$5,price_from=$6,image_path=$7,gallery=$8,
+      featured=$9,active=$10,sort_order=$11,updated_at=NOW() WHERE id=$12`, [
       req.body.category_id || null, req.body.name.trim(), slug, req.body.short_description || '', req.body.description || '', price(req.body.price_from),
-      imagePath, bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order), req.params.id
+      imagePath, JSON.stringify(gallery), bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order), req.params.id
     ]);
     res.redirect(`/admin/produtos/${req.params.id}/editar?ok=Produto atualizado`);
   } catch (err) { next(err); }

@@ -1,40 +1,48 @@
 <%- include('_head',{title}) %>
+<% const iconOptions = [
+  ['grid','Grade'],['gift','Presente'],['tag','Etiqueta'],['tags','Etiquetas'],['book','Livro'],['journal-bookmark','Caderno'],['sticky','Adesivo'],['palette','Criativo'],['balloon','Festa'],['balloon-heart','Celebração'],['cake2','Bolo'],['cup-hot','Caneca'],['bag','Sacola'],['box-seam','Caixa'],['briefcase','Corporativo'],['house-heart','Casa'],['heart','Coração'],['star','Estrela'],['flower1','Flor'],['gem','Premium'],['pencil','Papelaria'],['pen','Caneta'],['scissors','Recorte'],['printer','Impressão'],['image','Imagem'],['camera','Foto'],['calendar-event','Agenda'],['bookmark-star','Marcador'],['patch-check','Selo'],['award','Prêmio'],['trophy','Troféu'],['person-heart','Pessoa'],['people','Grupo'],['emoji-smile','Diversão'],['sparkles','Destaque'],['magic','Mágica'],['lightbulb','Ideia'],['shop','Loja'],['cart','Carrinho'],['truck','Entrega'],['building','Empresa'],['megaphone','Divulgação'],['layers','Camadas'],['collection','Coleção'],['stars','Estrelas'],['heart-fill','Favorito']
+]; %>
 <div class="page-intro">
-  <div><h2>Categorias do catálogo</h2><p>Organize a navegação do site e defina o ícone usado em cada categoria.</p></div>
+  <div><h2>Categorias do catálogo</h2><p>Crie, organize e padronize as categorias que aparecem na navegação da loja.</p></div>
 </div>
-<div class="admin-split-layout">
-  <section class="admin-card form-section side-create-card">
-    <div class="section-title"><span class="section-icon"><i class="bi bi-tag"></i></span><div><h3>Nova categoria</h3><p>Crie uma nova seção para organizar seus produtos.</p></div></div>
-    <form method="post" class="stack-form">
-      <label><span>Nome</span><input name="name" required placeholder="Ex.: Presentes personalizados"></label>
-      <label><span>Slug</span><input name="slug" placeholder="gerado automaticamente"></label>
-      <label><span>Ícone Bootstrap</span><div class="icon-input"><i class="bi bi-grid"></i><input name="icon" value="grid" placeholder="gift, tag, book..."></div><small>Exemplos: gift, tag, book, party, home, sticker, palette.</small></label>
-      <label><span>Ordem</span><input name="sort_order" type="number" value="0"></label>
-      <label class="switch-row"><div><strong>Categoria ativa</strong><small>Exibir no site</small></div><span class="switch"><input name="active" type="checkbox" checked><i></i></span></label>
-      <button class="admin-btn full-btn" type="submit"><i class="bi bi-plus-lg"></i> Adicionar categoria</button>
+
+<div class="category-manager-layout">
+  <section class="admin-card form-section category-create-panel">
+    <div class="section-title"><span class="section-icon"><i class="bi bi-plus-square"></i></span><div><h3>Nova categoria</h3><p>Cadastre uma nova seção do catálogo.</p></div></div>
+    <form method="post" class="stack-form category-create-form">
+      <div class="two-fields"><label><span>Nome</span><input name="name" required placeholder="Ex.: Presentes personalizados"></label><label><span>Slug da URL</span><input name="slug" placeholder="gerado-automaticamente"><small>Se ficar vazio, será criado pelo nome.</small></label></div>
+      <div class="two-fields"><label><span>Ícone Bootstrap</span><div class="icon-picker-field"><span class="icon-live-preview"><i class="bi bi-grid"></i></span><input name="icon" value="grid" data-icon-value readonly><button type="button" class="icon-picker-button" data-icon-picker-open>Escolher</button></div></label><label><span>Ordem</span><input name="sort_order" type="number" value="0"><small>Menor número aparece primeiro.</small></label></div>
+      <label class="switch-row"><div><strong>Categoria ativa</strong><small>Exibir esta categoria no site</small></div><span class="switch"><input name="active" type="checkbox" checked><i></i></span></label>
+      <button class="admin-btn" type="submit"><i class="bi bi-plus-lg"></i> Adicionar categoria</button>
     </form>
   </section>
 
-  <section class="admin-card">
-    <div class="card-head"><div><span class="card-kicker">ORGANIZAÇÃO</span><h3>Categorias cadastradas</h3></div><span class="count-badge"><%= categories.length %> categorias</span></div>
-    <div class="category-cards">
-      <% categories.forEach(c=>{ const iconClass = adminIconMap[c.icon] || (c.icon && c.icon.startsWith('bi-') ? c.icon : 'bi-grid'); %>
-        <div class="category-card-admin">
-          <div class="category-card-icon"><i class="bi <%= iconClass %>"></i></div>
-          <form method="post" action="/admin/categorias/<%= c.id %>/editar" class="category-edit-form">
-            <div class="category-card-head"><div><strong><%= c.name %></strong><span><%= c.product_count %> produto(s)</span></div><span class="badge <%= c.active?'on':'off' %>"><%= c.active?'Ativa':'Inativa' %></span></div>
-            <div class="category-fields">
-              <label><span>Nome</span><input name="name" value="<%= c.name %>"></label>
-              <label><span>Slug</span><input name="slug" value="<%= c.slug %>"></label>
-              <label><span>Ícone</span><input name="icon" value="<%= c.icon %>"></label>
-              <label><span>Ordem</span><input name="sort_order" type="number" value="<%= c.sort_order %>"></label>
-            </div>
-            <div class="category-card-actions"><label class="check"><input name="active" type="checkbox" <%= c.active?'checked':'' %>> Exibir no site</label><button class="admin-btn compact" type="submit"><i class="bi bi-check2"></i> Salvar</button></div>
-          </form>
-          <form method="post" action="/admin/categorias/<%= c.id %>/excluir" data-confirm="Excluir a categoria “<%= c.name %>”? Os produtos ficarão sem categoria."><button class="icon-action danger category-delete" title="Excluir"><i class="bi bi-trash3"></i></button></form>
-        </div>
+  <section class="admin-card category-list-panel">
+    <div class="card-head"><div><span class="card-kicker">ORGANIZAÇÃO</span><h3>Categorias cadastradas</h3><p class="card-help">Edite os dados na própria linha e salve somente a categoria alterada.</p></div><span class="count-badge"><%= categories.length %> categorias</span></div>
+    <div class="category-table-head"><span>Categoria</span><span>URL</span><span>Ícone</span><span>Ordem</span><span>Status</span><span></span></div>
+    <div class="category-manager-list">
+      <% categories.forEach(c=>{ const iconClass = c.icon && c.icon.startsWith('bi-') ? c.icon : `bi-${c.icon || 'grid'}`; %>
+        <form method="post" action="/admin/categorias/<%= c.id %>/editar" class="category-manager-row">
+          <div class="category-name-cell"><span class="category-card-icon"><i class="bi <%= iconClass %>"></i></span><div><input name="name" value="<%= c.name %>" aria-label="Nome da categoria"><small><%= c.product_count %> produto(s)</small></div></div>
+          <input name="slug" value="<%= c.slug %>" aria-label="Slug">
+          <div class="icon-picker-field compact"><span class="icon-live-preview"><i class="bi <%= iconClass %>"></i></span><input name="icon" value="<%= c.icon %>" data-icon-value readonly><button type="button" class="icon-picker-button" data-icon-picker-open><i class="bi bi-chevron-down"></i></button></div>
+          <input class="order-field" name="sort_order" type="number" value="<%= c.sort_order %>" aria-label="Ordem">
+          <label class="switch-row compact-switch"><span class="switch"><input name="active" type="checkbox" <%= c.active?'checked':'' %>><i></i></span><strong><%= c.active?'Ativa':'Inativa' %></strong></label>
+          <div class="category-row-actions"><button class="icon-action save" type="submit" title="Salvar"><i class="bi bi-check2"></i></button><button class="icon-action danger" type="submit" formaction="/admin/categorias/<%= c.id %>/excluir" data-inline-confirm="Excluir a categoria “<%= c.name %>”? Os produtos ficarão sem categoria." title="Excluir"><i class="bi bi-trash3"></i></button></div>
+        </form>
       <% }) %>
     </div>
   </section>
+</div>
+
+<div class="icon-picker-modal" data-icon-picker-modal aria-hidden="true">
+  <div class="icon-picker-backdrop" data-icon-picker-close></div>
+  <div class="icon-picker-dialog">
+    <div class="icon-picker-head"><div><span class="card-kicker">BOOTSTRAP ICONS</span><h3>Escolha um ícone</h3><p>Lista pronta com ícones úteis para categorias da loja.</p></div><button type="button" class="icon-action" data-icon-picker-close><i class="bi bi-x-lg"></i></button></div>
+    <div class="icon-search"><i class="bi bi-search"></i><input type="search" placeholder="Buscar por nome..." data-icon-search></div>
+    <div class="icon-options-grid">
+      <% iconOptions.forEach(([value,label])=>{ %><button type="button" class="icon-option" data-icon-option="<%= value %>" data-icon-label="<%= label.toLowerCase() %> <%= value %>"><i class="bi bi-<%= value %>"></i><span><%= label %></span><small><%= value %></small></button><% }) %>
+    </div>
+  </div>
 </div>
 <%- include('_foot') %>

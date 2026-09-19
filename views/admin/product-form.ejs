@@ -8,23 +8,39 @@
   <div class="editor-main">
     <section class="admin-card form-section">
       <div class="section-title"><span class="section-icon"><i class="bi bi-box-seam"></i></span><div><h3>Informações do produto</h3><p>Dados principais exibidos no catálogo e na página do produto.</p></div></div>
-      <div class="form-grid professional">
+      <div class="form-grid professional product-info-grid">
         <label class="full"><span>Nome do produto <b>*</b></span><input name="name" value="<%= product?.name || '' %>" required placeholder="Ex.: Caneca personalizada"></label>
-        <label><span>Slug da URL</span><div class="input-prefix"><span>/produto/</span><input name="slug" value="<%= product?.slug || '' %>" placeholder="gerado-automaticamente"></div><small>Deixe em branco para gerar automaticamente pelo nome.</small></label>
-        <label><span>Categoria</span><select name="category_id"><option value="">Sem categoria</option><% categories.forEach(c=>{ %><option value="<%= c.id %>" <%= String(product?.category_id)===String(c.id)?'selected':'' %>><%= c.name %></option><% }) %></select></label>
+        <label class="aligned-field"><span>Categoria</span><select name="category_id"><option value="">Sem categoria</option><% categories.forEach(c=>{ %><option value="<%= c.id %>" <%= String(product?.category_id)===String(c.id)?'selected':'' %>><%= c.name %></option><% }) %></select><small>Escolha onde o produto será encontrado no catálogo.</small></label>
+        <label class="aligned-field"><span>Slug da URL</span><div class="input-prefix"><span>/produto/</span><input name="slug" value="<%= product?.slug || '' %>" placeholder="gerado-automaticamente"></div><small>Deixe em branco para gerar automaticamente pelo nome.</small></label>
         <label class="full"><span>Descrição curta</span><input name="short_description" maxlength="180" value="<%= product?.short_description || '' %>" placeholder="Uma frase objetiva para os cards do catálogo"></label>
         <label class="full"><span>Descrição completa</span><textarea name="description" rows="7" placeholder="Descreva materiais, opções de personalização, tamanhos e informações importantes..."><%= product?.description || '' %></textarea></label>
       </div>
     </section>
 
     <section class="admin-card form-section">
-      <div class="section-title"><span class="section-icon"><i class="bi bi-image"></i></span><div><h3>Imagem principal</h3><p>Use uma imagem quadrada ou horizontal de boa qualidade.</p></div></div>
+      <div class="section-title"><span class="section-icon"><i class="bi bi-image"></i></span><div><h3>Imagem principal</h3><p>É a primeira foto que aparece no catálogo e na página do produto.</p></div></div>
       <div class="media-uploader">
         <div class="media-preview" data-image-preview>
           <% if(product?.image_path){ %><img src="<%= product.image_path %>" alt="Imagem atual"><% } else { %><div class="media-empty"><i class="bi bi-cloud-arrow-up"></i><strong>Selecione uma imagem</strong><span>PNG, JPG, WEBP ou GIF até 8 MB</span></div><% } %>
         </div>
-        <div class="media-controls"><label class="upload-btn"><i class="bi bi-upload"></i> Escolher imagem<input name="image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-image-input hidden></label><% if(product?.image_path){ %><label class="check danger-check"><input type="checkbox" name="remove_image"> Remover imagem atual</label><% } %></div>
+        <div class="media-controls"><label class="upload-btn"><i class="bi bi-upload"></i> Escolher imagem<input name="image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-image-input hidden></label><small>Recomendado: imagem quadrada, com boa iluminação.</small><% if(product?.image_path){ %><label class="check danger-check"><input type="checkbox" name="remove_image"> Remover imagem atual</label><% } %></div>
       </div>
+    </section>
+
+    <section class="admin-card form-section">
+      <div class="section-title"><span class="section-icon"><i class="bi bi-images"></i></span><div><h3>Galeria de fotos</h3><p>Adicione até 8 fotos extras. No site elas aparecem como miniaturas abaixo da imagem principal.</p></div></div>
+      <% const gallery = Array.isArray(product?.gallery) ? product.gallery : []; %>
+      <% if(gallery.length){ %>
+        <div class="admin-gallery-grid">
+          <% gallery.forEach((img,index)=>{ %><label class="admin-gallery-item"><img src="<%= img %>" alt="Foto extra <%= index+1 %>"><span><input type="checkbox" name="remove_gallery" value="<%= img %>"> Remover</span></label><% }) %>
+        </div>
+      <% } %>
+      <label class="gallery-upload-zone">
+        <i class="bi bi-images"></i><div><strong>Adicionar fotos extras</strong><small>Selecione várias imagens de uma vez. Máximo de 8 fotos na galeria.</small></div>
+        <input name="gallery" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple data-gallery-input hidden>
+        <span class="admin-btn ghost"><i class="bi bi-plus-lg"></i> Selecionar imagens</span>
+      </label>
+      <div class="new-gallery-preview" data-gallery-preview></div>
     </section>
   </div>
 
