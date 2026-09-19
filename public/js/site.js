@@ -10,6 +10,16 @@ const toast=t=>{const el=document.createElement('div');el.className='toast';el.i
 document.getElementById('menuToggle')?.addEventListener('click',()=>document.getElementById('mainNav')?.classList.toggle('open'));
 document.querySelectorAll('.add-cart').forEach(b=>b.addEventListener('click',()=>add(JSON.parse(b.dataset.product))));
 document.getElementById('addProduct')?.addEventListener('click',e=>{add(JSON.parse(e.currentTarget.dataset.product),Math.max(1,parseInt(document.getElementById('qty')?.value||'1')),document.getElementById('note')?.value||'')});
+const productPage=document.querySelector('[data-product-page]');
+const qtyInput=document.getElementById('qty');
+if(productPage&&qtyInput){
+  const unitPrice=Number(productPage.dataset.unitPrice||0);
+  const money=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+  const syncProductPrice=()=>{const qty=Math.max(1,parseInt(qtyInput.value||'1',10)||1);qtyInput.value=qty;document.querySelectorAll('[data-selected-qty]').forEach(el=>el.textContent=qty);const total=document.querySelector('[data-price-total]');if(total&&unitPrice>0)total.textContent=money.format(unitPrice*qty);const qtyText=document.querySelector('.estimated-total b');if(qtyText)qtyText.innerHTML=`<span data-selected-qty>${qty}</span> ${qty===1?'unidade':'unidades'}`};
+  document.querySelector('[data-qty-minus]')?.addEventListener('click',()=>{qtyInput.value=Math.max(1,(parseInt(qtyInput.value||'1',10)||1)-1);syncProductPrice()});
+  document.querySelector('[data-qty-plus]')?.addEventListener('click',()=>{qtyInput.value=(parseInt(qtyInput.value||'1',10)||1)+1;syncProductPrice()});
+  qtyInput.addEventListener('input',syncProductPrice);qtyInput.addEventListener('change',syncProductPrice);syncProductPrice();
+}
 const wa=window.IMPRIMARTE_WHATSAPP||'';
 const waOpen=msg=>window.open(`https://wa.me/${wa.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
 document.querySelectorAll('[data-whatsapp]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();waOpen('Olá! Vim pelo site da ImpriMarte e gostaria de fazer um orçamento.') }));

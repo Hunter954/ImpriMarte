@@ -17,6 +17,22 @@
       </div>
     </section>
 
+    <section class="admin-card form-section product-specs-editor">
+      <div class="section-title specs-title"><span class="section-icon"><i class="bi bi-list-check"></i></span><div><h3>Especificações do produto</h3><p>Crie as linhas que o cliente verá na página do produto, como material, formato e acabamento.</p></div></div>
+      <% const specifications = Array.isArray(product?.specifications) ? product.specifications : []; %>
+      <div class="spec-editor-head" aria-hidden="true"><span>Nome da informação</span><span>Valor</span><span></span></div>
+      <div class="spec-editor-list" data-spec-list>
+        <% (specifications.length ? specifications : [{label:'',value:''}]).forEach((spec,index)=>{ %>
+          <div class="spec-editor-row" data-spec-row>
+            <label><span class="mobile-field-label">Informação</span><input type="text" name="spec_label" value="<%= spec.label || '' %>" placeholder="Ex.: Material" maxlength="80"></label>
+            <label><span class="mobile-field-label">Valor</span><input type="text" name="spec_value" value="<%= spec.value || '' %>" placeholder="Ex.: Premium 210g" maxlength="180"></label>
+            <button type="button" class="icon-action danger spec-remove" data-spec-remove title="Remover linha" aria-label="Remover especificação"><i class="bi bi-trash3"></i></button>
+          </div>
+        <% }) %>
+      </div>
+      <div class="spec-editor-footer"><button type="button" class="admin-btn ghost" data-spec-add><i class="bi bi-plus-lg"></i> Adicionar especificação</button><small>Você pode adicionar até 30 linhas e ordenar arrastando depois, se precisar.</small></div>
+    </section>
+
     <section class="admin-card form-section">
       <div class="section-title"><span class="section-icon"><i class="bi bi-image"></i></span><div><h3>Imagem principal</h3><p>É a primeira foto que aparece no catálogo e na página do produto.</p></div></div>
       <div class="media-uploader">

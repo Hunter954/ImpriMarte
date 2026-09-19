@@ -56,5 +56,11 @@
   filterSubcategories();
   document.querySelectorAll('[data-inline-confirm]').forEach(btn=>btn.addEventListener('click',e=>{if(!confirm(btn.dataset.inlineConfirm||'Confirmar esta ação?'))e.preventDefault()}));
 
+  const specList=document.querySelector('[data-spec-list]');
+  const specRow=()=>{const row=document.createElement('div');row.className='spec-editor-row';row.dataset.specRow='';row.innerHTML=`<label><span class="mobile-field-label">Informação</span><input type="text" name="spec_label" placeholder="Ex.: Material" maxlength="80"></label><label><span class="mobile-field-label">Valor</span><input type="text" name="spec_value" placeholder="Ex.: Premium 210g" maxlength="180"></label><button type="button" class="icon-action danger spec-remove" data-spec-remove title="Remover linha" aria-label="Remover especificação"><i class="bi bi-trash3"></i></button>`;return row};
+  const bindSpecRemove=root=>root.querySelectorAll('[data-spec-remove]').forEach(btn=>{if(btn.dataset.bound)return;btn.dataset.bound='1';btn.addEventListener('click',()=>{const rows=specList?.querySelectorAll('[data-spec-row]')||[];const row=btn.closest('[data-spec-row]');if(rows.length<=1){row?.querySelectorAll('input').forEach(input=>input.value='');row?.querySelector('input')?.focus();return}row?.remove()})});
+  bindSpecRemove(document);
+  document.querySelector('[data-spec-add]')?.addEventListener('click',()=>{if(!specList||specList.querySelectorAll('[data-spec-row]').length>=30)return;const row=specRow();specList.appendChild(row);bindSpecRemove(row);row.querySelector('input')?.focus()});
+
   document.querySelectorAll('.settings-nav a').forEach(a=>a.addEventListener('click',e=>{const target=document.querySelector(a.getAttribute('href'));if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'})}}));
 })();

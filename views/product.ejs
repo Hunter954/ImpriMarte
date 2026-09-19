@@ -1,16 +1,72 @@
 <%- include('partials/head',{title}) %><%- include('partials/header') %>
-<% const gallery = Array.isArray(product.gallery) ? product.gallery : []; const productImages = [product.image_path, ...gallery].filter(Boolean); %>
-<main class="container page-space">
-  <div class="product-detail">
+<% const gallery = Array.isArray(product.gallery) ? product.gallery : []; const productImages = [product.image_path, ...gallery].filter(Boolean); const specifications = Array.isArray(product.specifications) ? product.specifications.filter(item => item && item.label && item.value) : []; const unitPrice = product.price_from == null ? null : Number(product.price_from); %>
+<main class="container page-space product-page" data-product-page data-unit-price="<%= unitPrice == null ? '' : unitPrice %>">
+  <div class="product-detail product-detail-v2">
     <div class="product-gallery">
       <div class="detail-image" data-product-main>
         <% if(productImages.length){ %><img src="<%= productImages[0] %>" alt="<%= product.name %>" data-main-product-image><% } else { %><div class="image-placeholder big"><img class="placeholder-logo" src="<%= settings.site_logo_path || '/img/logo.png' %>" alt="ImpriMarte"></div><% } %>
       </div>
       <% if(productImages.length > 1){ %><div class="product-thumbs" aria-label="Fotos do produto"><% productImages.forEach((img,index)=>{ %><button type="button" class="product-thumb <%= index===0?'active':'' %>" data-product-thumb="<%= img %>" aria-label="Ver foto <%= index+1 %>"><img src="<%= img %>" alt="Foto <%= index+1 %> de <%= product.name %>"></button><% }) %></div><% } %>
     </div>
-    <div class="detail-copy"><span class="eyebrow"><%= product.category_name || 'PERSONALIZADO' %></span><h1><%= product.name %></h1><p><%= product.description || product.short_description %></p><div class="detail-price"><%= product.price_from ? 'A partir de ' + formatBRL(product.price_from) : 'Preço sob consulta' %></div><p class="muted">O valor final pode variar conforme quantidade, tamanho, material e acabamento.</p><label>Quantidade estimada<input id="qty" class="qty-input" type="number" value="1" min="1"></label><label>Observação<textarea id="note" placeholder="Ex.: 100 unidades, logo colorida, tamanho 5x5cm"></textarea></label><div class="detail-actions"><button id="addProduct" class="btn" data-product='<%- JSON.stringify({id:product.id,name:product.name,slug:product.slug,price:product.price_from,image:product.image_path}) %>'><i class="bi bi-bag-plus"></i> Adicionar ao carrinho</button><button id="quoteProduct" class="btn btn-outline" data-name="<%= product.name %>"><i class="bi bi-whatsapp"></i> Pedir orçamento no WhatsApp</button></div></div>
+
+    <div class="detail-copy product-buy-panel">
+      <div class="product-heading">
+        <span class="eyebrow"><%= product.category_name || 'PERSONALIZADO' %></span>
+        <h1><%= product.name %></h1>
+        <% if(product.short_description){ %><p class="product-short-description"><%= product.short_description %></p><% } %>
+      </div>
+
+      <div class="product-price-card">
+        <% if(unitPrice != null){ %>
+          <div class="price-main"><span>A partir de</span><strong data-unit-price-label><%= formatBRL(unitPrice) %></strong><small>por unidade</small></div>
+        <% } else { %>
+          <div class="price-main"><span>Preço</span><strong>Sob consulta</strong><small>Solicite um orçamento personalizado</small></div>
+        <% } %>
+      </div>
+
+      <div class="purchase-box">
+        <div class="quantity-line">
+          <div><strong>Quantidade</strong><small>Escolha quantas unidades deseja</small></div>
+          <div class="quantity-stepper">
+            <button type="button" data-qty-minus aria-label="Diminuir quantidade"><i class="bi bi-dash-lg"></i></button>
+            <input id="qty" class="qty-input" type="number" value="1" min="1" step="1" inputmode="numeric" aria-label="Quantidade">
+            <button type="button" data-qty-plus aria-label="Aumentar quantidade"><i class="bi bi-plus-lg"></i></button>
+          </div>
+        </div>
+        <% if(unitPrice != null){ %>
+          <div class="estimated-total"><span><small>Total estimado</small><b><span data-selected-qty>1</span> unidade</b></span><strong data-price-total><%= formatBRL(unitPrice) %></strong></div>
+        <% } %>
+      </div>
+
+      <label class="product-note"><span>Observação <small>(opcional)</small></span><textarea id="note" placeholder="Ex.: preciso para determinada data, observação da arte, cor ou tamanho..."></textarea></label>
+
+      <div class="detail-actions">
+        <button id="addProduct" class="btn product-primary-action" data-product='<%- JSON.stringify({id:product.id,name:product.name,slug:product.slug,price:product.price_from,image:product.image_path}) %>'><i class="bi bi-bag-plus"></i> Adicionar ao carrinho</button>
+        <button id="quoteProduct" class="btn btn-outline" data-name="<%= product.name %>"><i class="bi bi-whatsapp"></i> Pedir orçamento</button>
+      </div>
+      <div class="purchase-help"><i class="bi bi-info-circle"></i><span>O valor pode variar conforme personalização, material e acabamento. A confirmação final é feita no atendimento.</span></div>
+    </div>
   </div>
-  <% if(related.length){ %><section class="section-block"><div class="section-head"><h2>Você também pode gostar</h2></div><div class="product-grid"><% related.forEach(product => { %><%- include('partials/product-card',{product}) %><% }) %></div></section><% } %>
+
+  <% if(specifications.length){ %>
+    <section class="product-content-section product-specifications-section">
+      <div class="product-section-heading"><span>DETALHES</span><h2>Especificações do produto</h2></div>
+      <div class="product-spec-table">
+        <% specifications.forEach((spec,index)=>{ %><div class="product-spec-row"><strong><%= spec.label %></strong><span><%= spec.value %></span></div><% }) %>
+      </div>
+    </section>
+  <% } %>
+
+  <% if(product.description){ %>
+    <section class="product-content-section product-description-section">
+      <div class="product-section-heading"><span>SAIBA MAIS</span><h2>Descrição do produto</h2></div>
+      <div class="product-description"><% String(product.description).split(/\r?\n/).filter(Boolean).forEach(paragraph=>{ %><p><%= paragraph %></p><% }) %></div>
+    </section>
+  <% } %>
+
+  <% if(related.length){ %>
+    <section class="section-block related-products-section"><div class="section-head"><div><span class="section-kicker">VEJA TAMBÉM</span><h2>Produtos relacionados</h2></div><a href="<%= product.category_slug ? '/categoria/' + product.category_slug : '/produtos' %>">Ver mais <i class="bi bi-arrow-right"></i></a></div><div class="product-grid"><% related.forEach(product => { %><%- include('partials/product-card',{product}) %><% }) %></div></section>
+  <% } %>
 </main>
 <script>
 document.querySelectorAll('[data-product-thumb]').forEach(btn=>btn.addEventListener('click',()=>{const main=document.querySelector('[data-main-product-image]');if(!main)return;main.src=btn.dataset.productThumb;document.querySelectorAll('[data-product-thumb]').forEach(item=>item.classList.remove('active'));btn.classList.add('active')}));

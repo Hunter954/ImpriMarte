@@ -59,6 +59,7 @@ async function initDb() {
       price_from NUMERIC(12,2),
       image_path TEXT,
       gallery JSONB NOT NULL DEFAULT '[]'::jsonb,
+      specifications JSONB NOT NULL DEFAULT '[]'::jsonb,
       featured BOOLEAN NOT NULL DEFAULT FALSE,
       active BOOLEAN NOT NULL DEFAULT TRUE,
       sort_order INTEGER NOT NULL DEFAULT 0,
@@ -72,6 +73,7 @@ async function initDb() {
     );
 
     ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory_id INTEGER;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS specifications JSONB NOT NULL DEFAULT '[]'::jsonb;
     DO $$
     BEGIN
       IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_subcategory_id_fkey') THEN

@@ -9,6 +9,15 @@ const router = express.Router();
 const bool = value => ['on', 'true', '1', 'yes'].includes(String(value || '').toLowerCase());
 const integer = (value, fallback = 0) => Number.isFinite(Number(value)) ? parseInt(value, 10) : fallback;
 const price = value => { const raw=String(value ?? '').trim(); if(!raw) return null; const n=Number(raw.replace(',', '.')); return Number.isFinite(n) ? n : null; };
+const list = value => Array.isArray(value) ? value : (value === undefined || value === null ? [] : [value]);
+const productSpecifications = body => {
+  const labels = list(body.spec_label);
+  const values = list(body.spec_value);
+  return labels.map((label, index) => ({
+    label: String(label || '').trim(),
+    value: String(values[index] || '').trim()
+  })).filter(item => item.label && item.value).slice(0, 30);
+};
 
 async function uniqueSlug(table, name, excludeId = null, categoryId = null) {
   const allowed = new Set(['products', 'categories', 'subcategories']);
@@ -136,11 +145,11 @@ router.post('/produtos/novo', upload.fields([{ name: 'image', maxCount: 1 }, { n
     const slug = await uniqueSlug('products', req.body.name);
     const categoryId = req.body.category_id || null;
     const subcategoryId = await validSubcategory(categoryId, req.body.subcategory_id);
-    await query(`INSERT INTO products(category_id,subcategory_id,name,slug,short_description,description,price_from,image_path,gallery,featured,active,sort_order)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`, [
+    await query(`INSERT INTO products(category_id,subcategory_id,name,slug,short_description,description,price_from,image_path,gallery,specifications,featured,active,sort_order)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, [
       categoryId, subcategoryId, req.body.name.trim(), slug, req.body.short_description || '', req.body.description || '', price(req.body.price_from),
       req.files?.image?.[0] ? `/uploads/${req.files.image[0].filename}` : null,
-      JSON.stringify((req.files?.gallery || []).map(file => `/uploads/${file.filename}`)),
+      JSON.stringify((req.files?.gallery || []).map(file => `/uploads/${file.filename}`)), JSON.stringify(productSpecifications(req.body)),
       bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order)
     ]);
     res.redirect('/admin/produtos?ok=Produto criado com sucesso');
@@ -168,10 +177,10 @@ router.post('/produtos/:id/editar', upload.fields([{ name: 'image', maxCount: 1 
     const gallery = [...keptGallery, ...newGallery].slice(0, 8);
     const categoryId = req.body.category_id || null;
     const subcategoryId = await validSubcategory(categoryId, req.body.subcategory_id);
-    await query(`UPDATE products SET category_id=$1,subcategory_id=$2,name=$3,slug=$4,short_description=$5,description=$6,price_from=$7,image_path=$8,gallery=$9,
-      featured=$10,active=$11,sort_order=$12,updated_at=NOW() WHERE id=$13`, [
+    await query(`UPDATE products SET category_id=$1,subcategory_id=$2,name=$3,slug=$4,short_description=$5,description=$6,price_from=$7,image_path=$8,gallery=$9,specifications=$10,
+      featured=$11,active=$12,sort_order=$13,updated_at=NOW() WHERE id=$14`, [
       categoryId, subcategoryId, req.body.name.trim(), slug, req.body.short_description || '', req.body.description || '', price(req.body.price_from),
-      imagePath, JSON.stringify(gallery), bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order), req.params.id
+      imagePath, JSON.stringify(gallery), JSON.stringify(productSpecifications(req.body)), bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order), req.params.id
     ]);
     res.redirect(`/admin/produtos/${req.params.id}/editar?ok=Produto atualizado`);
   } catch (err) { next(err); }
@@ -186,9 +195,9 @@ router.post('/produtos/:id/duplicar', async (req, res, next) => {
     let slug = base;
     let n = 2;
     while ((await query('SELECT 1 FROM products WHERE slug=$1',[slug])).rowCount) slug = `${base}-${n++}`;
-    const inserted = await query(`INSERT INTO products(category_id,subcategory_id,name,slug,short_description,description,price_from,image_path,gallery,featured,active,sort_order)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`, [
-      p.category_id, p.subcategory_id, `${p.name} (cópia)`, slug, p.short_description, p.description, p.price_from, p.image_path, JSON.stringify(p.gallery || []), false, false, p.sort_order
+    const inserted = await query(`INSERT INTO products(category_id,subcategory_id,name,slug,short_description,description,price_from,image_path,gallery,specifications,featured,active,sort_order)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id`, [
+      p.category_id, p.subcategory_id, `${p.name} (cópia)`, slug, p.short_description, p.description, p.price_from, p.image_path, JSON.stringify(p.gallery || []), JSON.stringify(p.specifications || []), false, false, p.sort_order
     ]);
     res.redirect(`/admin/produtos/${inserted.rows[0].id}/editar?ok=Produto duplicado. Revise e publique quando estiver pronto.`);
   } catch (err) { next(err); }
