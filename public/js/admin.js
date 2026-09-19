@@ -1,4 +1,5 @@
 (()=>{
+  const body=document.body;
   const shell=document.getElementById('adminShell');
   document.querySelectorAll('[data-sidebar-open]').forEach(b=>b.addEventListener('click',()=>shell?.classList.add('sidebar-open')));
   document.querySelectorAll('[data-sidebar-close]').forEach(b=>b.addEventListener('click',()=>shell?.classList.remove('sidebar-open')));
@@ -9,11 +10,7 @@
 
   const closeMenus=()=>document.querySelectorAll('.action-menu.open').forEach(m=>m.classList.remove('open'));
   document.querySelectorAll('[data-menu-button]').forEach(btn=>btn.addEventListener('click',e=>{
-    e.stopPropagation();
-    const menu=document.getElementById(btn.dataset.menuButton);
-    const open=menu?.classList.contains('open');
-    closeMenus();
-    if(menu&&!open) menu.classList.add('open');
+    e.stopPropagation(); const menu=document.getElementById(btn.dataset.menuButton); const open=menu?.classList.contains('open'); closeMenus(); if(menu&&!open) menu.classList.add('open');
   }));
   document.addEventListener('click',closeMenus);
   document.querySelectorAll('.action-menu').forEach(m=>m.addEventListener('click',e=>e.stopPropagation()));

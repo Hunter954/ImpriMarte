@@ -1,10 +1,10 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const slugify = require('slugify');
-const { query, getSettings, getQuoteConfig } = require('../db');
-const { calculateQuote } = require('../services/quoteCalculator');
+const { query, getSettings } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 const { upload } = require('../services/uploads');
+const { calculateQuote } = require('../services/quoteCalculator');
 const router = express.Router();
 
 const bool = value => ['on', 'true', '1', 'yes'].includes(String(value || '').toLowerCase());
@@ -67,11 +67,12 @@ router.post('/login', async (req, res, next) => {
   try {
     const email = (req.body.email || '').trim().toLowerCase();
     const result = await query('SELECT * FROM users WHERE email=$1', [email]);
-    if (!result.rowCount || !(await bcrypt.compare(req.body.password || '', result.rows[0].password_hash))) {
+    if (!result.rowCount || !result.rows[0].active || !(await bcrypt.compare(req.body.password || '', result.rows[0].password_hash))) {
       return renderLogin(req, res, 401, 'E-mail ou senha inválidos.');
     }
     req.session.userId = result.rows[0].id;
     req.session.userName = result.rows[0].name;
+    req.session.userRole = result.rows[0].role || 'operator';
     const target = req.session.returnTo || '/admin';
     delete req.session.returnTo;
     res.redirect(target);
@@ -83,10 +84,24 @@ router.post('/logout', requireAdmin, (req, res) => req.session.destroy(() => res
 router.use(requireAdmin);
 router.use(async (req, res, next) => {
   try {
+    // Sincroniza o perfil do banco em cada acesso. Assim uma correção de permissão
+    // entra em vigor mesmo se o navegador ainda estiver com uma sessão antiga.
+    const currentUser = await query('SELECT name,role,active FROM users WHERE id=$1', [req.session.userId]);
+    if (!currentUser.rowCount || !currentUser.rows[0].active) {
+      return req.session.destroy(() => res.redirect('/admin/login'));
+    }
+    req.session.userName = currentUser.rows[0].name;
+    req.session.userRole = currentUser.rows[0].role || 'operator';
     res.locals.adminName = req.session.userName || 'Administrador';
+    res.locals.adminRole = req.session.userRole || 'operator';
+    res.locals.isSuperAdmin = res.locals.adminRole === 'admin';
     res.locals.adminPath = req.path;
     res.locals.adminSettings = await getSettings();
     res.locals.notice = req.query.ok || '';
+    if (!res.locals.isSuperAdmin) {
+      const allowed = req.path === '/' || req.path.startsWith('/produtos') || req.path.startsWith('/orcamentos');
+      if (!allowed) return res.redirect('/admin?ok=Acesso restrito ao administrador');
+    }
     res.locals.adminIconMap = {
       sticker: 'bi-sticky', book: 'bi-journal-bookmark', gift: 'bi-gift', home: 'bi-house-heart',
       file: 'bi-palette', party: 'bi-balloon', tag: 'bi-tag', grid: 'bi-grid', box: 'bi-box-seam',
@@ -98,7 +113,7 @@ router.use(async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
   try {
-    const [productStats, categories, banners, recent] = await Promise.all([
+    const [productStats, categories, banners, recent, quotes] = await Promise.all([
       query(`SELECT COUNT(*)::int AS total,
                     COUNT(*) FILTER (WHERE active=TRUE)::int AS active,
                     COUNT(*) FILTER (WHERE active=FALSE)::int AS inactive,
@@ -108,12 +123,13 @@ router.get('/', async (req, res, next) => {
       query('SELECT COUNT(*)::int AS count FROM banners WHERE active=TRUE'),
       query(`SELECT p.id,p.name,p.slug,p.image_path,p.price_from,p.active,p.featured,c.name AS category_name
              FROM products p LEFT JOIN categories c ON c.id=p.category_id
-             ORDER BY p.updated_at DESC NULLS LAST,p.created_at DESC LIMIT 6`)
+             ORDER BY p.updated_at DESC NULLS LAST,p.created_at DESC LIMIT 6`),
+      query('SELECT COUNT(*)::int AS count FROM quotes')
     ]);
     const p = productStats.rows[0];
     res.render('admin/dashboard', {
       title: 'Visão geral',
-      stats: { products: p.total, active: p.active, inactive: p.inactive, featured: p.featured, categories: categories.rows[0].count, banners: banners.rows[0].count },
+      stats: { products: p.total, active: p.active, inactive: p.inactive, featured: p.featured, categories: categories.rows[0].count, banners: banners.rows[0].count, quotes: quotes.rows[0].count },
       recent: recent.rows
     });
   } catch (err) { next(err); }
@@ -273,6 +289,142 @@ router.post('/categorias/:id/excluir', async (req,res,next)=>{
   try { await query('DELETE FROM categories WHERE id=$1',[req.params.id]); res.redirect('/admin/categorias?ok=Categoria excluída'); } catch(err){next(err)}
 });
 
+
+function quoteConfigFromSettings(settings) {
+  const positive = (value, fallback) => {
+    const n = Number(String(value ?? '').replace(',', '.'));
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  };
+  const nonNegative = (value, fallback = 0) => {
+    const n = Number(String(value ?? '').replace(',', '.'));
+    return Number.isFinite(n) && n >= 0 ? n : fallback;
+  };
+  return {
+    sheetWidth: positive(settings.quote_sheet_width_cm, 29.7),
+    sheetHeight: positive(settings.quote_sheet_height_cm, 42),
+    maxPrintWidth: positive(settings.quote_max_print_width_cm, 48),
+    spacing: nonNegative(settings.quote_spacing_cm, 0),
+    cutLinearMeterPrice: positive(settings.quote_cut_linear_meter_price, 120),
+    noCutLinearMeterPrice: positive(settings.quote_no_cut_linear_meter_price, 108),
+    minimumCutPrice: positive(settings.quote_minimum_cut_price, 40),
+    minimumNoCutPrice: positive(settings.quote_minimum_no_cut_price, 36)
+  };
+}
+
+router.get('/orcamentos', async (req,res,next)=>{
+  try {
+    const quotes = await query(`SELECT q.*,u.name AS user_name FROM quotes q LEFT JOIN users u ON u.id=q.created_by ORDER BY q.created_at DESC LIMIT 200`);
+    res.render('admin/quotes',{title:'Orçamentos',quotes:quotes.rows});
+  } catch(err){ next(err); }
+});
+
+router.get('/orcamentos/novo', async (req,res,next)=>{
+  try {
+    const settings = await getSettings();
+    res.render('admin/quote-form',{title:'Novo orçamento',config:quoteConfigFromSettings(settings),error:null});
+  } catch(err){ next(err); }
+});
+
+router.post('/orcamentos/novo', async (req,res,next)=>{
+  try {
+    const settings = await getSettings();
+    const config = quoteConfigFromSettings(settings);
+    const input = {
+      shape: req.body.shape || 'rectangle',
+      width: req.body.width_cm,
+      height: req.body.height_cm,
+      quantity: req.body.quantity,
+      withCut: bool(req.body.with_cut)
+    };
+    const result = calculateQuote(input, config);
+    const width = Number(String(req.body.width_cm || '').replace(',','.'));
+    const height = Number(String(req.body.height_cm || req.body.width_cm || '').replace(',','.'));
+    if (!Number.isFinite(width) || width <= 0 || !Number.isFinite(height) || height <= 0) {
+      return res.status(400).render('admin/quote-form',{title:'Novo orçamento',config,error:'Informe medidas válidas maiores que zero.'});
+    }
+    await query(`INSERT INTO quotes(client_name,client_contact,shape,width_cm,height_cm,quantity,with_cut,capacity_per_sheet,sheets,total,unit_price,calculation_method,notes,created_by)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,[
+      String(req.body.client_name||'').trim(), String(req.body.client_contact||'').trim(), input.shape,
+      width,height,result.quantity,result.withCut,result.capacityA3,result.equivalentA3,result.total,result.unitPrice,result.method,String(req.body.notes||'').trim(),req.session.userId
+    ]);
+    res.redirect('/admin/orcamentos?ok=Orçamento salvo com sucesso');
+  } catch(err){ next(err); }
+});
+
+router.post('/orcamentos/:id/excluir', async (req,res,next)=>{
+  try { await query('DELETE FROM quotes WHERE id=$1',[req.params.id]); res.redirect('/admin/orcamentos?ok=Orçamento excluído'); } catch(err){next(err)}
+});
+
+router.get('/orcamentos/configuracoes', async (req,res,next)=>{
+  try {
+    if (req.session.userRole !== 'admin') return res.redirect('/admin/orcamentos');
+    const settings = await getSettings();
+    res.render('admin/quote-settings',{title:'Regras de orçamento',config:quoteConfigFromSettings(settings)});
+  } catch(err){next(err)}
+});
+
+router.post('/orcamentos/configuracoes', async (req,res,next)=>{
+  try {
+    if (req.session.userRole !== 'admin') return res.redirect('/admin/orcamentos');
+    const defaults={quote_sheet_width_cm:29.7,quote_sheet_height_cm:42,quote_max_print_width_cm:48,quote_spacing_cm:0,quote_cut_linear_meter_price:120,quote_no_cut_linear_meter_price:108,quote_minimum_cut_price:40,quote_minimum_no_cut_price:36};
+    for(const [key,fallback] of Object.entries(defaults)){
+      const raw=String(req.body[key]??'').trim().replace(',','.');
+      let value=Number(raw);
+      if(key==='quote_spacing_cm'){ if(!Number.isFinite(value)||value<0) value=fallback; }
+      else if(!Number.isFinite(value)||value<=0) value=fallback;
+      await query('INSERT INTO settings(key,value) VALUES($1,$2) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value',[key,String(value)]);
+    }
+    res.redirect('/admin/orcamentos/configuracoes?ok=Regras de orçamento atualizadas');
+  } catch(err){next(err)}
+});
+
+router.get('/usuarios', async (req,res,next)=>{
+  try {
+    if (req.session.userRole !== 'admin') return res.redirect('/admin');
+    const users=await query('SELECT id,name,email,role,active,created_at FROM users ORDER BY name,email');
+    res.render('admin/users',{title:'Usuários',users:users.rows,currentUserId:req.session.userId});
+  } catch(err){next(err)}
+});
+
+router.post('/usuarios', async (req,res,next)=>{
+  try {
+    if (req.session.userRole !== 'admin') return res.redirect('/admin');
+    const email=String(req.body.email||'').trim().toLowerCase();
+    const name=String(req.body.name||'').trim();
+    const password=String(req.body.password||'');
+    const role=req.body.role==='admin'?'admin':'operator';
+    if(!name || !email || password.length<6) return res.redirect('/admin/usuarios?ok=Preencha nome, e-mail e uma senha de pelo menos 6 caracteres');
+    const hash=await bcrypt.hash(password,12);
+    await query('INSERT INTO users(name,email,password_hash,role,active) VALUES($1,$2,$3,$4,TRUE)',[name,email,hash,role]);
+    res.redirect('/admin/usuarios?ok=Usuário criado');
+  } catch(err){ if(err.code==='23505') return res.redirect('/admin/usuarios?ok=Esse e-mail já está cadastrado'); next(err); }
+});
+
+router.post('/usuarios/:id/editar', async (req,res,next)=>{
+  try {
+    if (req.session.userRole !== 'admin') return res.redirect('/admin');
+    let role=req.body.role==='admin'?'admin':'operator';
+    let active=bool(req.body.active);
+    // O próprio administrador logado não pode se rebaixar/desativar por acidente.
+    if(Number(req.params.id)===Number(req.session.userId)){ role='admin'; active=true; }
+    await query('UPDATE users SET name=$1,email=$2,role=$3,active=$4 WHERE id=$5',[String(req.body.name||'').trim(),String(req.body.email||'').trim().toLowerCase(),role,active,req.params.id]);
+    if(String(req.body.password||'').length>=6){
+      const hash=await bcrypt.hash(String(req.body.password),12);
+      await query('UPDATE users SET password_hash=$1 WHERE id=$2',[hash,req.params.id]);
+    }
+    res.redirect('/admin/usuarios?ok=Usuário atualizado');
+  } catch(err){next(err)}
+});
+
+router.post('/usuarios/:id/excluir', async (req,res,next)=>{
+  try {
+    if (req.session.userRole !== 'admin') return res.redirect('/admin');
+    if(Number(req.params.id)===Number(req.session.userId)) return res.redirect('/admin/usuarios?ok=Você não pode excluir seu próprio usuário');
+    await query('DELETE FROM users WHERE id=$1',[req.params.id]);
+    res.redirect('/admin/usuarios?ok=Usuário excluído');
+  } catch(err){next(err)}
+});
+
 router.get('/configuracoes', async (req,res,next)=>{
   try { res.render('admin/settings',{title:'Configurações do site',settings:await getSettings(),saved:req.query.saved==='1'}); } catch(err){next(err)}
 });
@@ -346,97 +498,4 @@ router.post('/banners/:id/excluir', async (req,res,next)=>{
   try { await query('DELETE FROM banners WHERE id=$1',[req.params.id]); res.redirect('/admin/banners?ok=Banner excluído'); } catch(err){next(err)}
 });
 
-
-router.get('/orcamentos', async (req,res,next)=>{
-  try {
-    const result = await query('SELECT * FROM quotes ORDER BY created_at DESC LIMIT 100');
-    res.render('admin/quotes', { title: 'Orçamentos', quotes: result.rows });
-  } catch (err) { next(err); }
-});
-
-router.get('/orcamentos/novo', async (req,res,next)=>{
-  try {
-    res.render('admin/quote-form', { title: 'Novo orçamento', config: await getQuoteConfig(), error: null });
-  } catch (err) { next(err); }
-});
-
-router.post('/orcamentos/novo', async (req,res,next)=>{
-  try {
-    const payload = {
-      client_name: (req.body.client_name || '').trim(),
-      client_contact: (req.body.client_contact || '').trim(),
-      shape: req.body.shape || 'rectangle',
-      width: req.body.width_cm,
-      height: req.body.height_cm,
-      quantity: req.body.quantity,
-      withCut: bool(req.body.with_cut),
-      notes: (req.body.notes || '').trim()
-    };
-    const config = await getQuoteConfig();
-    const quote = calculateQuote(payload, config);
-    await query(`INSERT INTO quotes(client_name,client_contact,shape,width_cm,height_cm,quantity,with_cut,notes,total,unit_price,used_length_cm,across,rows_count,method,pricing_rule,summary)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`, [
-      payload.client_name || null,
-      payload.client_contact || null,
-      payload.shape,
-      Number(String(payload.width).replace(',', '.')),
-      payload.shape === 'circle' ? Number(String(payload.width).replace(',', '.')) : Number(String(payload.height || payload.width).replace(',', '.')),
-      quote.quantity,
-      quote.withCut,
-      payload.notes || null,
-      quote.total,
-      quote.unitPrice,
-      quote.usedLengthCm,
-      quote.across,
-      quote.rows,
-      quote.method,
-      quote.pricingRule,
-      JSON.stringify({
-        capacityA3: quote.capacityA3,
-        equivalentA3: quote.equivalentA3,
-        wasteUnits: quote.wasteUnits,
-        producedCapacity: quote.producedCapacity,
-        linearMeterPrice: quote.linearMeterPrice,
-        rawTotal: quote.rawTotal
-      })
-    ]);
-    res.redirect('/admin/orcamentos?ok=Orçamento salvo com sucesso');
-  } catch (err) {
-    try {
-      res.status(422).render('admin/quote-form', { title: 'Novo orçamento', config: await getQuoteConfig(), error: err.message || 'Não foi possível calcular o orçamento.' });
-    } catch (inner) { next(inner); }
-  }
-});
-
-router.post('/orcamentos/:id/excluir', async (req,res,next)=>{
-  try {
-    await query('DELETE FROM quotes WHERE id=$1', [req.params.id]);
-    res.redirect('/admin/orcamentos?ok=Orçamento excluído');
-  } catch (err) { next(err); }
-});
-
-router.get('/orcamentos/configuracoes', async (req,res,next)=>{
-  try {
-    res.render('admin/quote-settings', { title: 'Configurações de orçamento', config: await getQuoteConfig(), saved: req.query.saved === '1' });
-  } catch (err) { next(err); }
-});
-
-router.post('/orcamentos/configuracoes', async (req,res,next)=>{
-  try {
-    const map = {
-      quote_sheet_width: req.body.sheet_width,
-      quote_sheet_height: req.body.sheet_height,
-      quote_max_print_width: req.body.max_print_width,
-      quote_spacing: req.body.spacing,
-      quote_cut_linear_meter_price: req.body.cut_linear_meter_price,
-      quote_no_cut_linear_meter_price: req.body.no_cut_linear_meter_price,
-      quote_minimum_cut_price: req.body.minimum_cut_price,
-      quote_minimum_no_cut_price: req.body.minimum_no_cut_price
-    };
-    for (const [key, value] of Object.entries(map)) {
-      await query('INSERT INTO settings(key,value) VALUES($1,$2) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value', [key, String(value ?? '').trim()]);
-    }
-    res.redirect('/admin/orcamentos/configuracoes?saved=1');
-  } catch (err) { next(err); }
-});
 module.exports = router;
