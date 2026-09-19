@@ -37,23 +37,6 @@
   const iconSearch=document.querySelector('[data-icon-search]');
   iconSearch?.addEventListener('input',()=>{const q=iconSearch.value.trim().toLowerCase();document.querySelectorAll('[data-icon-option]').forEach(btn=>btn.hidden=q&&!btn.dataset.iconLabel.includes(q))});
 
-  const categorySelect=document.querySelector('[data-category-select]');
-  const subcategorySelect=document.querySelector('[data-subcategory-select]');
-  const filterSubcategories=()=>{
-    if(!categorySelect||!subcategorySelect)return;
-    const categoryId=categorySelect.value;
-    let selectedVisible=false;
-    [...subcategorySelect.options].forEach((option,index)=>{
-      if(index===0){option.hidden=false;return;}
-      const visible=!!categoryId&&option.dataset.categoryId===categoryId;
-      option.hidden=!visible; option.disabled=!visible;
-      if(visible&&option.selected)selectedVisible=true;
-    });
-    if(!selectedVisible&&subcategorySelect.selectedIndex>0)subcategorySelect.value='';
-    subcategorySelect.disabled=!categoryId;
-  };
-  categorySelect?.addEventListener('change',filterSubcategories);
-  filterSubcategories();
   document.querySelectorAll('[data-inline-confirm]').forEach(btn=>btn.addEventListener('click',e=>{if(!confirm(btn.dataset.inlineConfirm||'Confirmar esta ação?'))e.preventDefault()}));
 
   const specList=document.querySelector('[data-spec-list]');

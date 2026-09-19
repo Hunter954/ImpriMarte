@@ -10,8 +10,7 @@
       <div class="section-title"><span class="section-icon"><i class="bi bi-box-seam"></i></span><div><h3>Informações do produto</h3><p>Dados principais exibidos no catálogo e na página do produto.</p></div></div>
       <div class="form-grid professional product-info-grid">
         <label class="full"><span>Nome do produto <b>*</b></span><input name="name" value="<%= product?.name || '' %>" required placeholder="Ex.: Caneca personalizada"></label>
-        <label class="aligned-field"><span>Categoria</span><select name="category_id" data-category-select><option value="">Sem categoria</option><% categories.forEach(c=>{ %><option value="<%= c.id %>" <%= String(product?.category_id)===String(c.id)?'selected':'' %>><%= c.name %></option><% }) %></select><small>Categoria principal do produto.</small></label>
-        <label class="aligned-field"><span>Subcategoria</span><select name="subcategory_id" data-subcategory-select><option value="">Sem subcategoria</option><% (subcategories || []).forEach(s=>{ %><option value="<%= s.id %>" data-category-id="<%= s.category_id %>" <%= String(product?.subcategory_id)===String(s.id)?'selected':'' %>><%= s.name %></option><% }) %></select><small>As opções são filtradas conforme a categoria escolhida.</small></label>
+        <label class="full"><span>Categoria</span><select name="category_id"><option value="">Sem categoria</option><% categories.forEach(c=>{ %><option value="<%= c.id %>" <%= String(product?.category_id)===String(c.id)?'selected':'' %>><%= c.name %></option><% }) %></select><small>Escolha a categoria principal. Os filtros do catálogo serão criados automaticamente pelas especificações cadastradas abaixo.</small></label>
         <label class="full"><span>Descrição curta</span><input name="short_description" maxlength="180" value="<%= product?.short_description || '' %>" placeholder="Uma frase objetiva para os cards do catálogo"></label>
         <div class="full rich-editor-field" data-rich-editor>
           <span class="rich-editor-label">Descrição completa</span>
@@ -35,7 +34,7 @@
     </section>
 
     <section class="admin-card form-section product-specs-editor">
-      <div class="section-title specs-title"><span class="section-icon"><i class="bi bi-list-check"></i></span><div><h3>Especificações do produto</h3><p>Crie as linhas que o cliente verá na página do produto, como material, formato e acabamento.</p></div></div>
+      <div class="section-title specs-title"><span class="section-icon"><i class="bi bi-list-check"></i></span><div><h3>Especificações do produto</h3><p>Cadastre material, formato, acabamento e outras características. Essas informações também geram automaticamente os filtros da página Todos os produtos.</p></div></div>
       <% const specifications = Array.isArray(product?.specifications) ? product.specifications : []; %>
       <div class="spec-editor-head" aria-hidden="true"><span>Nome da informação</span><span>Valor</span><span></span></div>
       <div class="spec-editor-list" data-spec-list>
@@ -47,7 +46,7 @@
           </div>
         <% }) %>
       </div>
-      <div class="spec-editor-footer"><button type="button" class="admin-btn ghost" data-spec-add><i class="bi bi-plus-lg"></i> Adicionar especificação</button><small>Você pode adicionar até 30 linhas e ordenar arrastando depois, se precisar.</small></div>
+      <div class="spec-editor-footer"><button type="button" class="admin-btn ghost" data-spec-add><i class="bi bi-plus-lg"></i> Adicionar especificação</button><small>Você pode adicionar até 30 especificações por produto.</small></div>
     </section>
 
     <section class="admin-card form-section">

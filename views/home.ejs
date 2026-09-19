@@ -1,7 +1,6 @@
 <%- include('partials/head',{title}) %>
 <%- include('partials/header') %>
 <main>
-  <% const iconMap = {sticker:'bi-sticky',book:'bi-journal-bookmark',gift:'bi-gift',home:'bi-house-heart',file:'bi-palette',party:'bi-balloon',tag:'bi-tag',grid:'bi-grid'}; %>
   <section class="hero container">
     <div class="hero-card" <%- settings.hero_background_path ? `style="--hero-bg:url('${settings.hero_background_path}')"` : '' %>>
       <div class="hero-copy">
@@ -22,7 +21,8 @@
   <section class="category-strip container" aria-label="Categorias">
     <% categories.forEach(cat => { %>
       <a class="category-pill" href="/categoria/<%= cat.slug %>">
-        <span class="category-icon"><i class="bi <%= iconMap[cat.icon] || (cat.icon && cat.icon.startsWith('bi-') ? cat.icon : 'bi-grid') %>"></i></span>
+        <% const iconName = String(cat.icon || 'grid').replace(/^bi-/,''); %>
+        <span class="category-icon"><i class="bi bi-<%= iconName %>"></i></span>
         <strong><%= cat.name %></strong>
       </a>
     <% }) %>

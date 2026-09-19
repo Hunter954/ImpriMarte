@@ -1,6 +1,48 @@
 <%- include('partials/head',{title}) %><%- include('partials/header') %>
-<main class="container page-space">
-  <div class="catalog-head"><div><span class="eyebrow">CATÁLOGO</span><h1>Todos os produtos</h1></div><form class="catalog-search" method="get"><input name="q" placeholder="Buscar produto" value="<%= q %>"><button class="btn">Buscar</button></form></div>
-  <% if(!products.length){ %><div class="empty-state"><h2>Nenhum produto encontrado.</h2><p>Tente outra busca ou fale conosco pelo WhatsApp.</p></div><% } %>
-  <div class="product-grid product-grid-wide"><% products.forEach(product => { %><%- include('partials/product-card',{product}) %><% }) %></div>
-</main><%- include('partials/footer') %>
+<main class="container page-space catalog-page" data-catalog-page>
+  <div class="catalog-head catalog-head-v2">
+    <div><span class="eyebrow">CATÁLOGO</span><h1>Todos os produtos</h1><p>Use os filtros para encontrar rapidamente o acabamento, material ou formato que procura.</p></div>
+    <div class="catalog-search live-search"><i class="bi bi-search"></i><input type="search" placeholder="Buscar produto..." value="<%= q %>" data-catalog-search autocomplete="off"></div>
+  </div>
+
+  <div class="catalog-toolbar-mobile">
+    <button type="button" class="catalog-filter-open" data-filter-open><i class="bi bi-sliders"></i> Filtros <span data-active-filter-count hidden></span></button>
+    <span><strong data-catalog-count><%= products.length %></strong> produto(s)</span>
+  </div>
+
+  <div class="catalog-layout">
+    <aside class="catalog-filters" data-filter-panel>
+      <div class="catalog-filter-mobile-head"><strong>Filtros</strong><button type="button" data-filter-close aria-label="Fechar filtros"><i class="bi bi-x-lg"></i></button></div>
+      <div class="filter-topline"><div><span class="filter-kicker">REFINE SUA BUSCA</span><h2>Filtros</h2></div><button type="button" class="filter-clear" data-filter-clear>Limpar</button></div>
+
+      <section class="filter-group">
+        <button type="button" class="filter-group-title" data-filter-toggle><span>Categoria</span><i class="bi bi-chevron-up"></i></button>
+        <div class="filter-options">
+          <% categories.forEach(cat=>{ %>
+            <label class="filter-check"><input type="checkbox" value="<%= cat.id %>" data-category-filter><span class="filter-box"><i class="bi bi-check"></i></span><span><%= cat.name %></span><small data-category-count="<%= cat.id %>"></small></label>
+          <% }) %>
+        </div>
+      </section>
+
+      <div data-spec-filter-groups></div>
+    </aside>
+
+    <section class="catalog-results">
+      <div class="catalog-results-head"><span><strong data-catalog-count><%= products.length %></strong> produto(s) encontrados</span><span class="active-filter-summary" data-filter-summary></span></div>
+      <div class="product-grid product-grid-wide catalog-product-grid" data-catalog-grid>
+        <% products.forEach(product => { const specs=Array.isArray(product.specifications)?product.specifications:[]; %>
+          <div class="catalog-product-item"
+               data-catalog-product
+               data-category-id="<%= product.category_id || '' %>"
+               data-search="<%= `${product.name || ''} ${product.short_description || ''} ${product.category_name || ''}`.toLowerCase() %>"
+               data-specs="<%= encodeURIComponent(JSON.stringify(specs)) %>">
+            <%- include('partials/product-card',{product}) %>
+          </div>
+        <% }) %>
+      </div>
+      <div class="empty-state catalog-empty" data-catalog-empty hidden><i class="bi bi-search"></i><h2>Nenhum produto encontrado.</h2><p>Tente remover algum filtro ou buscar por outro termo.</p><button type="button" class="btn btn-outline" data-filter-clear>Limpar filtros</button></div>
+    </section>
+  </div>
+  <div class="catalog-filter-backdrop" data-filter-close></div>
+</main>
+<%- include('partials/footer') %>

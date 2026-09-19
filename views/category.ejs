@@ -1,8 +1,7 @@
 <%- include('partials/head',{title}) %><%- include('partials/header') %>
 <main class="container page-space">
-  <div class="page-hero"><span class="eyebrow">CATEGORIA</span><h1><%= category.name %></h1><p>Escolha o tipo que procura e encontre os produtos disponíveis.</p></div>
-  <% if((subcategories||[]).length){ %><nav class="subcategory-filter" aria-label="Subcategorias"><a class="<%= !selectedSubcategory?'active':'' %>" href="/categoria/<%= category.slug %>">Todos</a><% subcategories.forEach(s=>{ %><a class="<%= selectedSubcategory===s.slug?'active':'' %>" href="/categoria/<%= category.slug %>?subcategoria=<%= s.slug %>"><%= s.name %></a><% }) %></nav><% } %>
+  <div class="page-hero"><span class="eyebrow">CATEGORIA</span><h1><%= category.name %></h1><p>Confira todos os produtos disponíveis nesta categoria.</p></div>
   <div class="product-grid product-grid-wide"><% products.forEach(product => { %><%- include('partials/product-card',{product}) %><% }) %></div>
-  <% if(!products.length){ %><div class="empty-category"><i class="bi bi-box-seam"></i><h3>Nenhum produto nesta seleção</h3><p>Escolha outra subcategoria ou veja todos os produtos.</p></div><% } %>
+  <% if(!products.length){ %><div class="empty-category"><i class="bi bi-box-seam"></i><h3>Nenhum produto nesta categoria</h3><p>Em breve teremos novidades por aqui.</p></div><% } %>
 </main>
 <%- include('partials/footer') %>

@@ -37,21 +37,9 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
-    CREATE TABLE IF NOT EXISTS subcategories (
-      id SERIAL PRIMARY KEY,
-      category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
-      name TEXT NOT NULL,
-      slug TEXT NOT NULL,
-      sort_order INTEGER NOT NULL DEFAULT 0,
-      active BOOLEAN NOT NULL DEFAULT TRUE,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      UNIQUE(category_id, slug)
-    );
-
     CREATE TABLE IF NOT EXISTS products (
       id SERIAL PRIMARY KEY,
       category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
-      subcategory_id INTEGER REFERENCES subcategories(id) ON DELETE SET NULL,
       name TEXT NOT NULL,
       slug TEXT UNIQUE NOT NULL,
       short_description TEXT,
@@ -72,16 +60,7 @@ async function initDb() {
       value TEXT NOT NULL
     );
 
-    ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory_id INTEGER;
     ALTER TABLE products ADD COLUMN IF NOT EXISTS specifications JSONB NOT NULL DEFAULT '[]'::jsonb;
-    DO $$
-    BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_subcategory_id_fkey') THEN
-        ALTER TABLE products ADD CONSTRAINT products_subcategory_id_fkey FOREIGN KEY (subcategory_id) REFERENCES subcategories(id) ON DELETE SET NULL;
-      END IF;
-    END $$;
-    CREATE INDEX IF NOT EXISTS idx_subcategories_category_id ON subcategories(category_id);
-    CREATE INDEX IF NOT EXISTS idx_products_subcategory_id ON products(subcategory_id);
 
     CREATE TABLE IF NOT EXISTS banners (
       id SERIAL PRIMARY KEY,

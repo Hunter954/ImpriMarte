@@ -37,7 +37,7 @@ const sanitizeDescription = value => {
 };
 
 async function uniqueSlug(table, name, excludeId = null, categoryId = null) {
-  const allowed = new Set(['products', 'categories', 'subcategories']);
+  const allowed = new Set(['products', 'categories']);
   if (!allowed.has(table)) throw new Error('Tabela inválida para slug');
   const base = slugify(String(name || '').trim() || 'item', { lower: true, strict: true }) || 'item';
   let candidate = base;
@@ -45,19 +45,12 @@ async function uniqueSlug(table, name, excludeId = null, categoryId = null) {
   while (true) {
     const params = [candidate];
     let sql = `SELECT id FROM ${table} WHERE slug=$1`;
-    if (table === 'subcategories') { params.push(categoryId); sql += ` AND category_id=$${params.length}`; }
     if (excludeId) { params.push(excludeId); sql += ` AND id<>$${params.length}`; }
     if (!(await query(sql, params)).rowCount) return candidate;
     candidate = `${base}-${n++}`;
   }
 }
 
-
-async function validSubcategory(categoryId, subcategoryId) {
-  if (!categoryId || !subcategoryId) return null;
-  const found = await query('SELECT id FROM subcategories WHERE id=$1 AND category_id=$2', [subcategoryId, categoryId]);
-  return found.rowCount ? found.rows[0].id : null;
-}
 
 async function renderLogin(req, res, status = 200, error = null) {
   const settings = await getSettings().catch(() => ({}));
@@ -152,8 +145,8 @@ router.get('/produtos', async (req, res, next) => {
 
 router.get('/produtos/novo', async (req, res, next) => {
   try {
-    const [cats, subcats] = await Promise.all([query('SELECT * FROM categories ORDER BY sort_order,name'), query('SELECT * FROM subcategories WHERE active=TRUE ORDER BY category_id,sort_order,name')]);
-    res.render('admin/product-form', { title: 'Novo produto', product: null, categories: cats.rows, subcategories: subcats.rows, error: null });
+    const cats = await query('SELECT * FROM categories ORDER BY sort_order,name');
+    res.render('admin/product-form', { title: 'Novo produto', product: null, categories: cats.rows, error: null });
   } catch (err) { next(err); }
 });
 
@@ -161,10 +154,9 @@ router.post('/produtos/novo', upload.fields([{ name: 'image', maxCount: 1 }, { n
   try {
     const slug = await uniqueSlug('products', req.body.name);
     const categoryId = req.body.category_id || null;
-    const subcategoryId = await validSubcategory(categoryId, req.body.subcategory_id);
-    await query(`INSERT INTO products(category_id,subcategory_id,name,slug,short_description,description,price_from,image_path,gallery,specifications,featured,active,sort_order)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, [
-      categoryId, subcategoryId, req.body.name.trim(), slug, req.body.short_description || '', sanitizeDescription(req.body.description), price(req.body.price_from),
+    await query(`INSERT INTO products(category_id,name,slug,short_description,description,price_from,image_path,gallery,specifications,featured,active,sort_order)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`, [
+      categoryId, req.body.name.trim(), slug, req.body.short_description || '', sanitizeDescription(req.body.description), price(req.body.price_from),
       req.files?.image?.[0] ? `/uploads/${req.files.image[0].filename}` : null,
       JSON.stringify((req.files?.gallery || []).map(file => `/uploads/${file.filename}`)), JSON.stringify(productSpecifications(req.body)),
       bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order)
@@ -175,9 +167,9 @@ router.post('/produtos/novo', upload.fields([{ name: 'image', maxCount: 1 }, { n
 
 router.get('/produtos/:id/editar', async (req, res, next) => {
   try {
-    const [p, cats, subcats] = await Promise.all([query('SELECT * FROM products WHERE id=$1',[req.params.id]), query('SELECT * FROM categories ORDER BY sort_order,name'), query('SELECT * FROM subcategories WHERE active=TRUE ORDER BY category_id,sort_order,name')]);
+    const [p, cats] = await Promise.all([query('SELECT * FROM products WHERE id=$1',[req.params.id]), query('SELECT * FROM categories ORDER BY sort_order,name')]);
     if (!p.rowCount) return res.redirect('/admin/produtos');
-    res.render('admin/product-form', { title: 'Editar produto', product: p.rows[0], categories: cats.rows, subcategories: subcats.rows, error: null });
+    res.render('admin/product-form', { title: 'Editar produto', product: p.rows[0], categories: cats.rows, error: null });
   } catch (err) { next(err); }
 });
 
@@ -193,10 +185,9 @@ router.post('/produtos/:id/editar', upload.fields([{ name: 'image', maxCount: 1 
     const newGallery = (req.files?.gallery || []).map(file => `/uploads/${file.filename}`);
     const gallery = [...keptGallery, ...newGallery].slice(0, 8);
     const categoryId = req.body.category_id || null;
-    const subcategoryId = await validSubcategory(categoryId, req.body.subcategory_id);
-    await query(`UPDATE products SET category_id=$1,subcategory_id=$2,name=$3,slug=$4,short_description=$5,description=$6,price_from=$7,image_path=$8,gallery=$9,specifications=$10,
-      featured=$11,active=$12,sort_order=$13,updated_at=NOW() WHERE id=$14`, [
-      categoryId, subcategoryId, req.body.name.trim(), slug, req.body.short_description || '', sanitizeDescription(req.body.description), price(req.body.price_from),
+    await query(`UPDATE products SET category_id=$1,name=$2,slug=$3,short_description=$4,description=$5,price_from=$6,image_path=$7,gallery=$8,specifications=$9,
+      featured=$10,active=$11,sort_order=$12,updated_at=NOW() WHERE id=$13`, [
+      categoryId, req.body.name.trim(), slug, req.body.short_description || '', sanitizeDescription(req.body.description), price(req.body.price_from),
       imagePath, JSON.stringify(gallery), JSON.stringify(productSpecifications(req.body)), bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order), req.params.id
     ]);
     res.redirect(`/admin/produtos/${req.params.id}/editar?ok=Produto atualizado`);
@@ -212,9 +203,9 @@ router.post('/produtos/:id/duplicar', async (req, res, next) => {
     let slug = base;
     let n = 2;
     while ((await query('SELECT 1 FROM products WHERE slug=$1',[slug])).rowCount) slug = `${base}-${n++}`;
-    const inserted = await query(`INSERT INTO products(category_id,subcategory_id,name,slug,short_description,description,price_from,image_path,gallery,specifications,featured,active,sort_order)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id`, [
-      p.category_id, p.subcategory_id, `${p.name} (cópia)`, slug, p.short_description, p.description, p.price_from, p.image_path, JSON.stringify(p.gallery || []), JSON.stringify(p.specifications || []), false, false, p.sort_order
+    const inserted = await query(`INSERT INTO products(category_id,name,slug,short_description,description,price_from,image_path,gallery,specifications,featured,active,sort_order)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`, [
+      p.category_id, `${p.name} (cópia)`, slug, p.short_description, p.description, p.price_from, p.image_path, JSON.stringify(p.gallery || []), JSON.stringify(p.specifications || []), false, false, p.sort_order
     ]);
     res.redirect(`/admin/produtos/${inserted.rows[0].id}/editar?ok=Produto duplicado. Revise e publique quando estiver pronto.`);
   } catch (err) { next(err); }
@@ -243,10 +234,9 @@ router.post('/produtos/:id/excluir', async (req, res, next) => {
 
 router.get('/categorias', async (req, res, next) => {
   try {
-    const r = await query(`SELECT c.*,COUNT(DISTINCT p.id)::int AS product_count,COUNT(DISTINCT s.id)::int AS subcategory_count
+    const r = await query(`SELECT c.*,COUNT(DISTINCT p.id)::int AS product_count
       FROM categories c
       LEFT JOIN products p ON p.category_id=c.id
-      LEFT JOIN subcategories s ON s.category_id=c.id
       GROUP BY c.id ORDER BY c.sort_order,c.name`);
     res.render('admin/categories',{title:'Categorias',categories:r.rows});
   } catch(err){next(err)}
@@ -262,12 +252,11 @@ router.post('/categorias', async (req,res,next)=>{
 
 router.get('/categorias/:id', async (req,res,next)=>{
   try {
-    const [category, subcategories] = await Promise.all([
-      query(`SELECT c.*,COUNT(DISTINCT p.id)::int AS product_count FROM categories c LEFT JOIN products p ON p.category_id=c.id WHERE c.id=$1 GROUP BY c.id`,[req.params.id]),
-      query(`SELECT s.*,COUNT(p.id)::int AS product_count FROM subcategories s LEFT JOIN products p ON p.subcategory_id=s.id WHERE s.category_id=$1 GROUP BY s.id ORDER BY s.sort_order,s.name`,[req.params.id])
-    ]);
+    const category = await query(`SELECT c.*,COUNT(DISTINCT p.id)::int AS product_count
+      FROM categories c LEFT JOIN products p ON p.category_id=c.id
+      WHERE c.id=$1 GROUP BY c.id`,[req.params.id]);
     if (!category.rowCount) return res.redirect('/admin/categorias');
-    res.render('admin/category-detail',{title:`Categoria: ${category.rows[0].name}`,category:category.rows[0],subcategories:subcategories.rows});
+    res.render('admin/category-detail',{title:'Editar categoria',category:category.rows[0]});
   } catch(err){next(err)}
 });
 
@@ -275,33 +264,7 @@ router.post('/categorias/:id/editar', async (req,res,next)=>{
   try {
     const slug = await uniqueSlug('categories', req.body.name, req.params.id);
     await query('UPDATE categories SET name=$1,slug=$2,icon=$3,sort_order=$4,active=$5 WHERE id=$6',[req.body.name.trim(),slug,req.body.icon||'grid',integer(req.body.sort_order),bool(req.body.active),req.params.id]);
-    const back = req.body.return_to === 'detail' ? `/admin/categorias/${req.params.id}?ok=Categoria atualizada` : '/admin/categorias?ok=Categoria atualizada';
-    res.redirect(back);
-  } catch(err){next(err)}
-});
-
-router.post('/categorias/:id/subcategorias', async (req,res,next)=>{
-  try {
-    const category = await query('SELECT id FROM categories WHERE id=$1',[req.params.id]);
-    if (!category.rowCount) return res.redirect('/admin/categorias');
-    const slug = await uniqueSlug('subcategories', req.body.name, null, req.params.id);
-    await query('INSERT INTO subcategories(category_id,name,slug,sort_order,active) VALUES($1,$2,$3,$4,$5)',[req.params.id,req.body.name.trim(),slug,integer(req.body.sort_order),bool(req.body.active)]);
-    res.redirect(`/admin/categorias/${req.params.id}?ok=Subcategoria adicionada`);
-  } catch(err){next(err)}
-});
-
-router.post('/categorias/:categoryId/subcategorias/:id/editar', async (req,res,next)=>{
-  try {
-    const slug = await uniqueSlug('subcategories', req.body.name, req.params.id, req.params.categoryId);
-    await query('UPDATE subcategories SET name=$1,slug=$2,sort_order=$3,active=$4 WHERE id=$5 AND category_id=$6',[req.body.name.trim(),slug,integer(req.body.sort_order),bool(req.body.active),req.params.id,req.params.categoryId]);
-    res.redirect(`/admin/categorias/${req.params.categoryId}?ok=Subcategoria atualizada`);
-  } catch(err){next(err)}
-});
-
-router.post('/categorias/:categoryId/subcategorias/:id/excluir', async (req,res,next)=>{
-  try {
-    await query('DELETE FROM subcategories WHERE id=$1 AND category_id=$2',[req.params.id,req.params.categoryId]);
-    res.redirect(`/admin/categorias/${req.params.categoryId}?ok=Subcategoria excluída`);
+    res.redirect(`/admin/categorias/${req.params.id}?ok=Categoria atualizada`);
   } catch(err){next(err)}
 });
 

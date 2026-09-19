@@ -1,9 +1,9 @@
 <%- include('_head',{title}) %>
 <% const iconOptions = [
-['grid','Grade'],['sticky','Adesivo'],['journal-bookmark','Caderno'],['gift','Presente'],['house-heart','Casa'],['palette','Arte'],['balloon','Festa'],['tag','Etiqueta'],['box-seam','Caixa'],['cup-hot','Caneca'],['star','Estrela'],['heart','Coração'],['briefcase','Corporativo'],['camera','Foto'],['image','Imagem'],['printer','Impressão'],['file-earmark-text','Papel'],['card-text','Cartão'],['layers','Camadas'],['collection','Coleção'],['shop','Loja']
+['grid','Grade'],['sticky','Adesivo'],['journal-bookmark','Caderno'],['gift','Presente'],['house-heart','Casa'],['palette','Arte'],['balloon','Festa'],['tag','Etiqueta'],['box-seam','Caixa'],['cup-hot','Caneca'],['star','Estrela'],['heart','Coração'],['briefcase','Corporativo'],['camera','Foto'],['images','Fotos'],['image','Imagem'],['printer','Impressão'],['file-earmark-text','Papel'],['card-text','Cartão'],['layers','Camadas'],['collection','Coleção'],['shop','Loja']
 ]; %>
 <div class="page-intro categories-page-intro">
-  <div><h2>Categorias do catálogo</h2><p>Crie as categorias principais e entre em cada uma para gerenciar quantas subcategorias precisar.</p></div>
+  <div><h2>Categorias do catálogo</h2><p>Crie e organize as categorias principais usadas no catálogo.</p></div>
 </div>
 
 <div class="categories-workspace">
@@ -30,10 +30,10 @@
             <span class="category-card-icon"><i class="bi <%= iconClass %>"></i></span>
             <span class="status-pill <%= c.active?'active':'inactive' %>"><%= c.active?'Ativa':'Inativa' %></span>
           </div>
-          <div class="category-overview-copy"><h3><%= c.name %></h3><p><strong><%= c.subcategory_count %></strong> subcategoria(s) · <strong><%= c.product_count %></strong> produto(s)</p></div>
+          <div class="category-overview-copy"><h3><%= c.name %></h3><p><strong><%= c.product_count %></strong> produto(s) nesta categoria</p></div>
           <div class="category-overview-actions">
-            <a class="admin-btn compact" href="/admin/categorias/<%= c.id %>"><i class="bi bi-diagram-3"></i> Gerenciar</a>
-            <form method="post" action="/admin/categorias/<%= c.id %>/excluir"><button class="icon-action danger" type="submit" data-inline-confirm="Excluir a categoria “<%= c.name %>”? As subcategorias também serão removidas e os produtos ficarão sem categoria." title="Excluir"><i class="bi bi-trash3"></i></button></form>
+            <a class="admin-btn compact" href="/admin/categorias/<%= c.id %>"><i class="bi bi-pencil-square"></i> Editar</a>
+            <form method="post" action="/admin/categorias/<%= c.id %>/excluir"><button class="icon-action danger" type="submit" data-inline-confirm="Excluir a categoria “<%= c.name %>”? Os produtos ficarão sem categoria." title="Excluir"><i class="bi bi-trash3"></i></button></form>
           </div>
         </article>
       <% }) %>
