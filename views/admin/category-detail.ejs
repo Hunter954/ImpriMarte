@@ -1,0 +1,45 @@
+<%- include('_head',{title}) %>
+<% const iconOptions=[['grid','Grade'],['sticky','Adesivo'],['journal-bookmark','Caderno'],['gift','Presente'],['house-heart','Casa'],['palette','Arte'],['balloon','Festa'],['tag','Etiqueta'],['box-seam','Caixa'],['cup-hot','Caneca'],['star','Estrela'],['heart','Coração'],['briefcase','Corporativo'],['camera','Foto'],['image','Imagem'],['printer','Impressão'],['file-earmark-text','Papel'],['card-text','Cartão'],['layers','Camadas'],['collection','Coleção'],['shop','Loja']]; const currentIcon=category.icon&&category.icon.startsWith('bi-')?category.icon.replace(/^bi-/,''):(category.icon||'grid'); %>
+<div class="page-intro sticky-intro"><div><div class="breadcrumb-admin"><a href="/admin/categorias">Categorias</a><i class="bi bi-chevron-right"></i><span><%= category.name %></span></div><p class="page-intro-note">Edite a categoria e gerencie todas as subcategorias dentro dela.</p></div><a class="admin-btn ghost" href="/admin/categorias"><i class="bi bi-arrow-left"></i> Voltar</a></div>
+
+<div class="category-detail-layout">
+  <aside class="admin-card form-section category-settings-card">
+    <div class="section-title"><span class="section-icon"><i class="bi bi-tag"></i></span><div><h3>Categoria principal</h3><p>O endereço da página acompanha automaticamente o nome da categoria.</p></div></div>
+    <form method="post" action="/admin/categorias/<%= category.id %>/editar" class="stack-form">
+      <input type="hidden" name="return_to" value="detail">
+      <label><span>Nome</span><input name="name" value="<%= category.name %>" required></label>
+      <div class="two-fields"><label><span>Ícone Bootstrap</span><div class="icon-picker-field"><span class="icon-live-preview"><i class="bi bi-<%= currentIcon %>"></i></span><input name="icon" value="<%= currentIcon %>" data-icon-value readonly><button type="button" class="icon-picker-button" data-icon-picker-open>Escolher</button></div></label><label><span>Ordem</span><input name="sort_order" type="number" value="<%= category.sort_order %>"></label></div>
+      <label class="switch-row"><div><strong>Categoria ativa</strong><small>Visível para clientes</small></div><span class="switch"><input name="active" type="checkbox" <%= category.active?'checked':'' %>><i></i></span></label>
+      <button class="admin-btn" type="submit"><i class="bi bi-check2"></i> Salvar categoria</button>
+    </form>
+  </aside>
+
+  <section class="subcategory-workspace">
+    <section class="admin-card form-section subcategory-create-card">
+      <div class="section-title"><span class="section-icon"><i class="bi bi-node-plus"></i></span><div><h3>Adicionar subcategoria</h3><p>Ex.: Matte, Crystal, Crystal Laminado. Você pode cadastrar quantas precisar.</p></div></div>
+      <form method="post" action="/admin/categorias/<%= category.id %>/subcategorias" class="subcategory-create-form">
+        <label><span>Nome da subcategoria</span><input name="name" required placeholder="Ex.: Matte"></label>
+        <label class="small-field"><span>Ordem</span><input name="sort_order" type="number" value="0"></label>
+        <label class="switch-row compact-sub-switch"><div><strong>Ativa</strong></div><span class="switch"><input name="active" type="checkbox" checked><i></i></span></label>
+        <button class="admin-btn" type="submit"><i class="bi bi-plus-lg"></i> Adicionar</button>
+      </form>
+    </section>
+
+    <section class="admin-card subcategory-list-card">
+      <div class="card-head"><div><span class="card-kicker">SUBCATEGORIAS</span><h3>Dentro de <%= category.name %></h3><p class="card-help"><%= subcategories.length %> cadastrada(s). Os endereços são gerados automaticamente.</p></div></div>
+      <% if(!subcategories.length){ %><div class="empty-admin"><i class="bi bi-diagram-3"></i><h4>Nenhuma subcategoria</h4><p>Cadastre a primeira acima.</p></div><% } %>
+      <div class="subcategory-list">
+        <% subcategories.forEach(s=>{ %>
+          <form class="subcategory-row" method="post" action="/admin/categorias/<%= category.id %>/subcategorias/<%= s.id %>/editar">
+            <div class="subcategory-name"><span class="subcategory-icon"><i class="bi bi-arrow-return-right"></i></span><div><label><span>Nome</span><input name="name" value="<%= s.name %>" required></label><small><%= s.product_count %> produto(s) usando esta subcategoria</small></div></div>
+            <label class="subcategory-order"><span>Ordem</span><input name="sort_order" type="number" value="<%= s.sort_order %>"></label>
+            <label class="switch-row compact-sub-switch"><div><strong><%= s.active?'Ativa':'Inativa' %></strong></div><span class="switch"><input name="active" type="checkbox" <%= s.active?'checked':'' %>><i></i></span></label>
+            <div class="subcategory-actions"><button class="icon-action save" type="submit" title="Salvar"><i class="bi bi-check2"></i></button><button class="icon-action danger" type="submit" formaction="/admin/categorias/<%= category.id %>/subcategorias/<%= s.id %>/excluir" data-inline-confirm="Excluir a subcategoria “<%= s.name %>”?" title="Excluir"><i class="bi bi-trash3"></i></button></div>
+          </form>
+        <% }) %>
+      </div>
+    </section>
+  </section>
+</div>
+<div class="icon-picker-modal" data-icon-picker-modal aria-hidden="true"><div class="icon-picker-backdrop" data-icon-picker-close></div><div class="icon-picker-dialog"><div class="icon-picker-head"><div><span class="card-kicker">BOOTSTRAP ICONS</span><h3>Escolha um ícone</h3><p>Selecione visualmente o ícone da categoria.</p></div><button type="button" class="icon-action" data-icon-picker-close><i class="bi bi-x-lg"></i></button></div><div class="icon-search"><i class="bi bi-search"></i><input type="search" placeholder="Buscar por nome..." data-icon-search></div><div class="icon-options-grid"><% iconOptions.forEach(([value,label])=>{ %><button type="button" class="icon-option" data-icon-option="<%= value %>" data-icon-label="<%= label.toLowerCase() %> <%= value %>"><i class="bi bi-<%= value %>"></i><span><%= label %></span><small><%= value %></small></button><% }) %></div></div></div>
+<%- include('_foot') %>

@@ -13,7 +13,7 @@
 
 <section class="admin-card">
   <form class="filter-bar" method="get">
-    <div class="search-field"><i class="bi bi-search"></i><input name="q" value="<%= filters.q %>" placeholder="Buscar produto, slug ou descrição..."></div>
+    <div class="search-field"><i class="bi bi-search"></i><input name="q" value="<%= filters.q %>" placeholder="Buscar produto ou descrição..."></div>
     <select name="category">
       <option value="">Todas as categorias</option>
       <% categories.forEach(c=>{ %><option value="<%= c.id %>" <%= String(filters.category)===String(c.id)?'selected':'' %>><%= c.name %></option><% }) %>
@@ -32,7 +32,7 @@
       <div class="product-admin-row">
         <div class="product-main-cell">
           <div class="admin-product-image"><% if(p.image_path){%><img src="<%= p.image_path %>" alt=""><%}else{%><img src="<%= adminSettings.site_logo_path || '/img/logo.png' %>" class="logo-fallback" alt=""><%}%></div>
-          <div><a href="/admin/produtos/<%= p.id %>/editar"><strong><%= p.name %></strong></a><small>/<%= p.slug %></small></div>
+          <div><a href="/admin/produtos/<%= p.id %>/editar"><strong><%= p.name %></strong></a><small><%= p.category_name || 'Sem categoria' %></small></div>
         </div>
         <div data-label="Categoria"><span class="soft-pill"><i class="bi bi-tag"></i> <%= p.category_name || 'Sem categoria' %></span></div>
         <div data-label="Preço"><strong class="price-cell"><%= p.price_from ? formatBRL(p.price_from) : 'Sob consulta' %></strong></div>

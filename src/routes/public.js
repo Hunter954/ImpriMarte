@@ -43,8 +43,14 @@ router.get('/categoria/:slug', async (req, res, next) => {
   try {
     const cat = await query('SELECT * FROM categories WHERE slug=$1 AND active=TRUE', [req.params.slug]);
     if (!cat.rowCount) return res.status(404).render('404', { title: 'Categoria não encontrada' });
-    const products = await query('SELECT * FROM products WHERE category_id=$1 AND active=TRUE ORDER BY sort_order,name', [cat.rows[0].id]);
-    res.render('category', { title: cat.rows[0].name, category: cat.rows[0], products: products.rows });
+    const selectedSubcategory = (req.query.subcategoria || '').trim();
+    const [subcategories, products] = await Promise.all([
+      query('SELECT * FROM subcategories WHERE category_id=$1 AND active=TRUE ORDER BY sort_order,name',[cat.rows[0].id]),
+      selectedSubcategory
+        ? query(`SELECT p.* FROM products p LEFT JOIN subcategories s ON s.id=p.subcategory_id WHERE p.category_id=$1 AND p.active=TRUE AND s.slug=$2 ORDER BY p.sort_order,p.name`,[cat.rows[0].id,selectedSubcategory])
+        : query('SELECT * FROM products WHERE category_id=$1 AND active=TRUE ORDER BY sort_order,name',[cat.rows[0].id])
+    ]);
+    res.render('category', { title: cat.rows[0].name, category: cat.rows[0], subcategories: subcategories.rows, selectedSubcategory, products: products.rows });
   } catch (err) { next(err); }
 });
 
