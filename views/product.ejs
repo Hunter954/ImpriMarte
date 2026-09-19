@@ -38,6 +38,15 @@
         <% } %>
       </div>
 
+      <% if(specifications.length){ %>
+        <section class="buy-panel-specs" aria-labelledby="product-specs-title">
+          <div class="buy-panel-section-title"><span>DETALHES</span><h2 id="product-specs-title">Especificações do produto</h2></div>
+          <div class="buy-panel-spec-table">
+            <% specifications.forEach(spec=>{ %><div class="buy-panel-spec-row"><strong><%= spec.label %></strong><span><%= spec.value %></span></div><% }) %>
+          </div>
+        </section>
+      <% } %>
+
       <label class="product-note"><span>Observação <small>(opcional)</small></span><textarea id="note" placeholder="Ex.: preciso para determinada data, observação da arte, cor ou tamanho..."></textarea></label>
 
       <div class="detail-actions">
@@ -48,19 +57,10 @@
     </div>
   </div>
 
-  <% if(specifications.length){ %>
-    <section class="product-content-section product-specifications-section">
-      <div class="product-section-heading"><span>DETALHES</span><h2>Especificações do produto</h2></div>
-      <div class="product-spec-table">
-        <% specifications.forEach((spec,index)=>{ %><div class="product-spec-row"><strong><%= spec.label %></strong><span><%= spec.value %></span></div><% }) %>
-      </div>
-    </section>
-  <% } %>
-
   <% if(product.description){ %>
     <section class="product-content-section product-description-section">
       <div class="product-section-heading"><span>SAIBA MAIS</span><h2>Descrição do produto</h2></div>
-      <div class="product-description"><% String(product.description).split(/\r?\n/).filter(Boolean).forEach(paragraph=>{ %><p><%= paragraph %></p><% }) %></div>
+      <div class="product-description rich-product-description"><% const desc = String(product.description || ''); const hasRichMarkup = /<(?:p|br|strong|b|em|i|u|ul|ol|li|h2|h3|h4|a)(?:\s|>)/i.test(desc); %><% if(hasRichMarkup){ %><%- desc %><% } else { desc.split(/\r?\n/).filter(Boolean).forEach(paragraph=>{ %><p><%= paragraph %></p><% }) } %></div>
     </section>
   <% } %>
 

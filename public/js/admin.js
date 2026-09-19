@@ -62,5 +62,19 @@
   bindSpecRemove(document);
   document.querySelector('[data-spec-add]')?.addEventListener('click',()=>{if(!specList||specList.querySelectorAll('[data-spec-row]').length>=30)return;const row=specRow();specList.appendChild(row);bindSpecRemove(row);row.querySelector('input')?.focus()});
 
+  document.querySelectorAll('[data-rich-editor]').forEach(editor=>{
+    const area=editor.querySelector('[data-editor-area]');
+    const input=editor.querySelector('[data-editor-input]');
+    if(!area||!input)return;
+    const sync=()=>{input.value=area.innerHTML.trim()};
+    const focus=()=>{area.focus()};
+    editor.querySelectorAll('[data-editor-command]').forEach(btn=>btn.addEventListener('click',()=>{focus();document.execCommand(btn.dataset.editorCommand,false,null);sync()}));
+    editor.querySelectorAll('[data-editor-block]').forEach(btn=>btn.addEventListener('click',()=>{focus();document.execCommand('formatBlock',false,btn.dataset.editorBlock);sync()}));
+    editor.querySelector('[data-editor-link]')?.addEventListener('click',()=>{const url=prompt('Cole o link que deseja inserir:','https://');if(!url)return;focus();document.execCommand('createLink',false,url);sync()});
+    area.addEventListener('input',sync);
+    area.addEventListener('blur',sync);
+    area.closest('form')?.addEventListener('submit',sync);
+  });
+
   document.querySelectorAll('.settings-nav a').forEach(a=>a.addEventListener('click',e=>{const target=document.querySelector(a.getAttribute('href'));if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'})}}));
 })();

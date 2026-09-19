@@ -13,7 +13,24 @@
         <label class="aligned-field"><span>Categoria</span><select name="category_id" data-category-select><option value="">Sem categoria</option><% categories.forEach(c=>{ %><option value="<%= c.id %>" <%= String(product?.category_id)===String(c.id)?'selected':'' %>><%= c.name %></option><% }) %></select><small>Categoria principal do produto.</small></label>
         <label class="aligned-field"><span>Subcategoria</span><select name="subcategory_id" data-subcategory-select><option value="">Sem subcategoria</option><% (subcategories || []).forEach(s=>{ %><option value="<%= s.id %>" data-category-id="<%= s.category_id %>" <%= String(product?.subcategory_id)===String(s.id)?'selected':'' %>><%= s.name %></option><% }) %></select><small>As opções são filtradas conforme a categoria escolhida.</small></label>
         <label class="full"><span>Descrição curta</span><input name="short_description" maxlength="180" value="<%= product?.short_description || '' %>" placeholder="Uma frase objetiva para os cards do catálogo"></label>
-        <label class="full"><span>Descrição completa</span><textarea name="description" rows="7" placeholder="Descreva materiais, opções de personalização, tamanhos e informações importantes..."><%= product?.description || '' %></textarea></label>
+        <div class="full rich-editor-field" data-rich-editor>
+          <span class="rich-editor-label">Descrição completa</span>
+          <div class="rich-editor-toolbar" role="toolbar" aria-label="Formatação da descrição">
+            <button type="button" data-editor-command="bold" title="Negrito"><i class="bi bi-type-bold"></i></button>
+            <button type="button" data-editor-command="italic" title="Itálico"><i class="bi bi-type-italic"></i></button>
+            <span class="editor-divider"></span>
+            <button type="button" data-editor-block="h3" title="Título"><i class="bi bi-type-h3"></i></button>
+            <button type="button" data-editor-block="p" title="Parágrafo"><i class="bi bi-text-paragraph"></i></button>
+            <span class="editor-divider"></span>
+            <button type="button" data-editor-command="insertUnorderedList" title="Lista com marcadores"><i class="bi bi-list-ul"></i></button>
+            <button type="button" data-editor-command="insertOrderedList" title="Lista numerada"><i class="bi bi-list-ol"></i></button>
+            <button type="button" data-editor-link title="Inserir link"><i class="bi bi-link-45deg"></i></button>
+            <button type="button" data-editor-command="removeFormat" title="Limpar formatação"><i class="bi bi-eraser"></i></button>
+          </div>
+          <div class="rich-editor-area" contenteditable="true" data-editor-area data-placeholder="Descreva materiais, opções de personalização, tamanhos e informações importantes..."><%- product?.description || '' %></div>
+          <textarea name="description" data-editor-input hidden><%= product?.description || '' %></textarea>
+          <small>Use negrito, listas, subtítulos e links para deixar a descrição mais organizada e fácil de ler.</small>
+        </div>
       </div>
     </section>
 

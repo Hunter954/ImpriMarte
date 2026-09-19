@@ -19,6 +19,23 @@ const productSpecifications = body => {
   })).filter(item => item.label && item.value).slice(0, 30);
 };
 
+const sanitizeDescription = value => {
+  let html = String(value || '');
+  html = html.replace(/<\/?(?:script|style|iframe|object|embed|form|input|button|meta|link)[^>]*>/gi, '');
+  html = html.replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+  html = html.replace(/(href\s*=\s*["'])\s*javascript:[^"']*(["'])/gi, '$1#$2');
+  const allowed = /^(?:p|br|strong|b|em|i|u|ul|ol|li|h2|h3|h4|a)$/i;
+  html = html.replace(/<\/?([a-z0-9]+)(?:\s[^>]*)?>/gi, (tag, name) => {
+    if (!allowed.test(name)) return '';
+    if (name.toLowerCase() === 'a' && !tag.startsWith('</')) {
+      const href = (tag.match(/href\s*=\s*["']([^"']+)["']/i) || [])[1] || '#';
+      return `<a href="${href.replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer">`;
+    }
+    return tag.replace(/\s(?:class|style|id|title|target|rel)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+  });
+  return html.trim();
+};
+
 async function uniqueSlug(table, name, excludeId = null, categoryId = null) {
   const allowed = new Set(['products', 'categories', 'subcategories']);
   if (!allowed.has(table)) throw new Error('Tabela inválida para slug');
@@ -147,7 +164,7 @@ router.post('/produtos/novo', upload.fields([{ name: 'image', maxCount: 1 }, { n
     const subcategoryId = await validSubcategory(categoryId, req.body.subcategory_id);
     await query(`INSERT INTO products(category_id,subcategory_id,name,slug,short_description,description,price_from,image_path,gallery,specifications,featured,active,sort_order)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, [
-      categoryId, subcategoryId, req.body.name.trim(), slug, req.body.short_description || '', req.body.description || '', price(req.body.price_from),
+      categoryId, subcategoryId, req.body.name.trim(), slug, req.body.short_description || '', sanitizeDescription(req.body.description), price(req.body.price_from),
       req.files?.image?.[0] ? `/uploads/${req.files.image[0].filename}` : null,
       JSON.stringify((req.files?.gallery || []).map(file => `/uploads/${file.filename}`)), JSON.stringify(productSpecifications(req.body)),
       bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order)
@@ -179,7 +196,7 @@ router.post('/produtos/:id/editar', upload.fields([{ name: 'image', maxCount: 1 
     const subcategoryId = await validSubcategory(categoryId, req.body.subcategory_id);
     await query(`UPDATE products SET category_id=$1,subcategory_id=$2,name=$3,slug=$4,short_description=$5,description=$6,price_from=$7,image_path=$8,gallery=$9,specifications=$10,
       featured=$11,active=$12,sort_order=$13,updated_at=NOW() WHERE id=$14`, [
-      categoryId, subcategoryId, req.body.name.trim(), slug, req.body.short_description || '', req.body.description || '', price(req.body.price_from),
+      categoryId, subcategoryId, req.body.name.trim(), slug, req.body.short_description || '', sanitizeDescription(req.body.description), price(req.body.price_from),
       imagePath, JSON.stringify(gallery), JSON.stringify(productSpecifications(req.body)), bool(req.body.featured), bool(req.body.active), integer(req.body.sort_order), req.params.id
     ]);
     res.redirect(`/admin/produtos/${req.params.id}/editar?ok=Produto atualizado`);
