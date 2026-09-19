@@ -47,3 +47,67 @@ input[type=file]{width:100%;max-width:100%}
 @media(max-width:1180px){.category-table-head,.category-manager-row{grid-template-columns:minmax(210px,1.2fr) minmax(150px,1fr) minmax(150px,.8fr) 70px 95px 78px}.icon-options-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.banner-manager-layout{grid-template-columns:360px minmax(0,1fr)}.banner-manager-row{grid-template-columns:115px minmax(0,1fr) auto}.banner-list-thumb{width:115px;height:76px}}
 @media(max-width:960px){.admin-gallery-grid{grid-template-columns:repeat(3,1fr)}.category-table-head{display:none}.category-manager-row{grid-template-columns:1fr 1fr;gap:9px;padding:15px}.category-name-cell{grid-column:1/-1}.category-row-actions{grid-column:2;justify-self:end}.compact-switch{align-self:center}.banner-manager-layout{grid-template-columns:1fr}.banner-editor-card{position:static}.banner-manager-row{grid-template-columns:125px minmax(0,1fr) auto}}
 @media(max-width:680px){.stat-icon{flex-basis:39px}.admin-gallery-grid{grid-template-columns:repeat(2,1fr)}.gallery-upload-zone{grid-template-columns:40px 1fr}.gallery-upload-zone>.admin-btn{grid-column:1/-1;width:100%}.category-create-panel{padding:16px}.category-create-form .two-fields{grid-template-columns:1fr}.category-manager-row{grid-template-columns:1fr}.category-name-cell,.category-row-actions{grid-column:auto}.category-row-actions{justify-self:stretch}.category-row-actions .icon-action{flex:1}.icon-options-grid{grid-template-columns:repeat(3,minmax(0,1fr));padding:12px}.icon-picker-dialog{max-height:92vh}.banner-manager-row{grid-template-columns:88px minmax(0,1fr);align-items:start}.banner-list-thumb{width:88px;height:68px}.banner-row-actions{grid-column:1/-1;justify-content:flex-end}.banner-list-meta span:nth-child(2){max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+
+/* === UI polish / cache-fix patch 2026-09-19 === */
+.category-list-panel>.card-head,
+.banner-list-card>.card-head{
+  margin:0;
+  padding:20px 22px 16px;
+  border-bottom:0;
+  background:#fff;
+}
+.category-manager-list{display:grid;width:100%}
+.banners-page-intro{align-items:flex-end}
+
+/* Keep every field visually consistent even when it is outside stack-form/professional */
+.banner-form-section label:not(.switch-row):not(.banner-upload-box):not(.check),
+.category-create-panel label:not(.switch-row),
+.gallery-upload-zone{
+  min-width:0;
+}
+.banner-form-section label:not(.switch-row):not(.banner-upload-box):not(.check)>span,
+.category-create-panel label:not(.switch-row)>span{
+  font-size:12px;
+  font-weight:800;
+  color:#4c443f;
+}
+.banner-form-section input:not([type="checkbox"]):not([type="file"]),
+.banner-form-section select,
+.banner-form-section textarea,
+.category-create-panel input:not([type="checkbox"]),
+.category-create-panel select,
+.category-create-panel textarea{
+  width:100%;
+  min-width:0;
+}
+
+/* Categories table feels like one finished component, not loose controls */
+.category-table-head{margin:0}
+.category-manager-row{background:#fff;transition:background .15s ease}
+.category-manager-row input{color:var(--ink)}
+.category-manager-row .icon-picker-field{width:100%}
+.category-manager-row .switch{flex:0 0 auto}
+.category-row-actions .icon-action{flex:0 0 34px}
+
+/* Banner cards/list spacing and controls */
+.banner-list-card .empty-admin{border-top:1px solid var(--line)}
+.banner-manager-list:not(:empty){border-top:1px solid var(--line)}
+.banner-manager-row:first-child{border-top:0}
+.banner-editor-card .section-title{margin-bottom:14px}
+.banner-form-section .two-fields.stack-form{gap:10px}
+.banner-upload-box .admin-btn.ghost{box-shadow:0 3px 12px rgba(45,31,22,.08)}
+
+/* Gallery visual consistency */
+.admin-gallery-grid{align-items:stretch}
+.admin-gallery-item{display:grid;grid-template-rows:1fr auto}
+.gallery-upload-zone:hover{border-color:#e99a64;background:#fff8f3}
+
+@media(max-width:960px){
+  .category-list-panel>.card-head,.banner-list-card>.card-head{padding:18px}
+  .banners-page-intro{align-items:flex-start}
+}
+@media(max-width:680px){
+  .category-list-panel>.card-head,.banner-list-card>.card-head{padding:16px}
+  .category-list-panel>.card-head .count-badge,.banner-list-card>.card-head .count-badge{margin-left:0}
+  .banner-form-section{padding:12px}
+}
