@@ -1,0 +1,60 @@
+<%- include('_head',{title}) %>
+<section class="page-intro">
+  <div><div class="breadcrumb-admin"><a href="/admin/orcamentos">Orçamentos</a><i class="bi bi-chevron-right"></i><span>Novo</span></div><h2>Calcular adesivos</h2><p>Informe formato, medida e quantidade. O aproveitamento e o preço são calculados na hora.</p></div>
+</section>
+<% if (error) { %><div class="alert error"><i class="bi bi-exclamation-triangle-fill"></i><span><%= error %></span></div><% } %>
+<form method="post" action="/admin/orcamentos/novo" class="quote-builder" data-quote-calculator
+  data-sheet-width="<%= config.sheetWidth %>" data-sheet-height="<%= config.sheetHeight %>" data-max-print-width="<%= config.maxPrintWidth %>" data-spacing="<%= config.spacing %>"
+  data-cut-price="<%= config.cutSheetPrice %>" data-no-cut-price="<%= config.noCutSheetPrice %>" data-cut-three="<%= config.cutThreeSheetPrice %>" data-no-cut-three="<%= config.noCutThreeSheetPrice %>">
+  <div class="quote-form-column">
+    <section class="admin-card quote-section">
+      <div class="card-head"><div><span class="card-kicker">1. CLIENTE</span><h3>Identificação</h3></div></div>
+      <div class="two-fields">
+        <label class="stack-label"><span>Nome do cliente <small>opcional</small></span><input type="text" name="client_name" placeholder="Ex.: Loja da Maria" maxlength="120"></label>
+        <label class="stack-label"><span>Contato <small>opcional</small></span><input type="text" name="client_contact" placeholder="WhatsApp ou telefone" maxlength="80"></label>
+      </div>
+    </section>
+
+    <section class="admin-card quote-section">
+      <div class="card-head"><div><span class="card-kicker">2. FORMATO</span><h3>Como é a etiqueta?</h3><p class="card-help">O sistema usa um encaixe diferente para cada geometria.</p></div></div>
+      <div class="shape-picker">
+        <label><input type="radio" name="shape" value="rectangle" checked><span><i class="bi bi-square"></i><b>Quadrado / retângulo</b><small>grade + rotação</small></span></label>
+        <label><input type="radio" name="shape" value="circle"><span><i class="bi bi-circle"></i><b>Redondo</b><small>encaixe intercalado</small></span></label>
+        <label><input type="radio" name="shape" value="triangle"><span><i class="bi bi-triangle"></i><b>Triangular</b><small>em pé + invertido</small></span></label>
+        <label><input type="radio" name="shape" value="custom"><span><i class="bi bi-stars"></i><b>Especial</b><small>cálculo conservador</small></span></label>
+      </div>
+      <div class="quote-dimensions">
+        <label class="stack-label"><span data-width-label>Largura</span><div class="input-suffix"><input type="number" name="width_cm" min="0.1" step="0.1" value="5" required data-quote-width><em>cm</em></div></label>
+        <label class="stack-label" data-height-field><span data-height-label>Altura</span><div class="input-suffix"><input type="number" name="height_cm" min="0.1" step="0.1" value="5" required data-quote-height><em>cm</em></div></label>
+        <label class="stack-label"><span>Quantidade</span><input type="number" name="quantity" min="1" step="1" value="40" required data-quote-quantity></label>
+      </div>
+      <div class="cut-choice">
+        <div><strong>Recorte eletrônico</strong><small>Ative quando a máquina também fará o contorno de corte.</small></div>
+        <label class="switch"><input type="checkbox" name="with_cut" checked data-quote-cut><span></span></label>
+      </div>
+    </section>
+
+    <section class="admin-card quote-section">
+      <div class="card-head"><div><span class="card-kicker">3. OBSERVAÇÕES</span><h3>Detalhes do pedido</h3></div></div>
+      <label class="stack-label"><textarea name="notes" rows="4" placeholder="Material, acabamento, prazo, detalhes do arquivo..."></textarea></label>
+    </section>
+  </div>
+
+  <aside class="quote-result-column">
+    <section class="admin-card quote-result-card">
+      <div class="quote-result-top"><span class="card-kicker">CÁLCULO EM TEMPO REAL</span><span class="live-dot"><i></i> atualizado</span></div>
+      <div class="quote-total"><small>Valor do orçamento</small><strong data-quote-total>R$ 40,00</strong><span data-quote-unit>R$ 1,00 por unidade</span></div>
+      <div class="quote-result-grid">
+        <div><i class="bi bi-grid-3x3-gap"></i><span><small>Cabem por A3</small><strong data-quote-capacity>40</strong></span></div>
+        <div><i class="bi bi-file-earmark"></i><span><small>Folhas necessárias</small><strong data-quote-sheets>1</strong></span></div>
+        <div><i class="bi bi-scissors"></i><span><small>Produção</small><strong data-quote-cut-label>Com recorte</strong></span></div>
+        <div><i class="bi bi-boxes"></i><span><small>Capacidade total</small><strong data-quote-production>40 un.</strong></span></div>
+      </div>
+      <div class="packing-method"><i class="bi bi-magic"></i><div><small>Encaixe utilizado</small><strong data-quote-method>Grade otimizada com rotação</strong></div></div>
+      <div class="packing-preview"><div class="packing-preview-head"><span>Prévia de aproveitamento</span><small>1 folha A3</small></div><canvas data-packing-canvas width="520" height="360"></canvas></div>
+      <div class="price-rule-note" data-price-rule-note></div>
+      <button class="admin-btn full-btn quote-save" type="submit"><i class="bi bi-check2-circle"></i> Salvar orçamento</button>
+    </section>
+  </aside>
+</form>
+<%- include('_foot') %>

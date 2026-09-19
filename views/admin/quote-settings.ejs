@@ -1,0 +1,20 @@
+<%- include('_head',{title}) %>
+<section class="page-intro"><div><div class="breadcrumb-admin"><a href="/admin/orcamentos">Orçamentos</a><i class="bi bi-chevron-right"></i><span>Regras</span></div><h2>Regras do calculador</h2><p>Altere preços e área útil sem precisar mudar o código.</p></div></section>
+<form method="post" class="quote-settings-grid">
+  <section class="admin-card quote-section"><div class="card-head"><div><span class="card-kicker">FOLHA / MÁQUINA</span><h3>Área de produção</h3></div></div>
+    <div class="two-fields">
+      <label class="stack-label"><span>Largura da folha A3 (cm)</span><input type="number" step="0.1" min="1" name="quote_sheet_width_cm" value="<%= settings.quote_sheet_width_cm || '29.7' %>"></label>
+      <label class="stack-label"><span>Altura da folha A3 (cm)</span><input type="number" step="0.1" min="1" name="quote_sheet_height_cm" value="<%= settings.quote_sheet_height_cm || '42' %>"></label>
+      <label class="stack-label"><span>Boca máxima da impressora (cm)</span><input type="number" step="0.1" min="1" name="quote_max_print_width_cm" value="<%= settings.quote_max_print_width_cm || '48' %>"></label>
+      <label class="stack-label"><span>Espaço entre adesivos (cm)</span><input type="number" step="0.01" min="0" name="quote_spacing_cm" value="<%= settings.quote_spacing_cm || '0' %>"><small>Deixe 0 para reproduzir a regra atual de 40 unidades 5×5 em A3.</small></label>
+    </div>
+  </section>
+  <section class="admin-card quote-section"><div class="card-head"><div><span class="card-kicker">PRECIFICAÇÃO</span><h3>Com recorte</h3></div></div>
+    <div class="two-fields"><label class="stack-label"><span>Preço por folha — 1 ou 2 folhas</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_cut_sheet_price" value="<%= settings.quote_cut_sheet_price || '40' %>"></div></label><label class="stack-label"><span>Pacote de 3 folhas (5×5: acima de 80)</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_cut_three_sheet_price" value="<%= settings.quote_cut_three_sheet_price || '140' %>"></div></label></div>
+  </section>
+  <section class="admin-card quote-section"><div class="card-head"><div><span class="card-kicker">PRECIFICAÇÃO</span><h3>Sem recorte</h3></div></div>
+    <div class="two-fields"><label class="stack-label"><span>Preço por folha — 1 ou 2 folhas</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_no_cut_sheet_price" value="<%= settings.quote_no_cut_sheet_price || '36' %>"></div></label><label class="stack-label"><span>Pacote de 3 folhas (5×5: acima de 80)</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_no_cut_three_sheet_price" value="<%= settings.quote_no_cut_three_sheet_price || '120' %>"></div></label></div>
+  </section>
+  <div class="quote-settings-actions"><a class="admin-btn ghost" href="/admin/orcamentos">Cancelar</a><button class="admin-btn" type="submit"><i class="bi bi-check2"></i> Salvar regras</button></div>
+</form>
+<%- include('_foot') %>

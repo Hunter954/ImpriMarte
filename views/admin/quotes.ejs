@@ -1,0 +1,27 @@
+<%- include('_head',{title}) %>
+<section class="page-intro">
+  <div><span class="eyebrow-admin">PRODUÇÃO</span><h2>Orçamentos de adesivos</h2><p>Calcule aproveitamento, folhas A3 e valor final sem fazer conta manual.</p></div>
+  <div class="intro-actions">
+    <% if (isSuperAdmin) { %><a class="admin-btn ghost" href="/admin/orcamentos/configuracoes"><i class="bi bi-sliders2"></i> Regras de preço</a><% } %>
+    <a class="admin-btn" href="/admin/orcamentos/novo"><i class="bi bi-plus-lg"></i> Novo orçamento</a>
+  </div>
+</section>
+<section class="admin-card quote-list-card">
+  <div class="card-head quote-list-head"><div><span class="card-kicker">HISTÓRICO</span><h3>Orçamentos salvos</h3></div><span class="count-badge"><%= quotes.length %> registros</span></div>
+  <% if (!quotes.length) { %><div class="empty-admin"><i class="bi bi-calculator"></i><h4>Nenhum orçamento salvo</h4><p>Crie o primeiro orçamento para começar.</p><a href="/admin/orcamentos/novo" class="admin-btn compact">Criar orçamento</a></div><% } %>
+  <div class="quote-table">
+    <% quotes.forEach(q=>{ %>
+      <article class="quote-row">
+        <div class="quote-id"><span>#<%= q.id %></span><small><%= new Date(q.created_at).toLocaleDateString('pt-BR') %></small></div>
+        <div class="quote-client"><strong><%= q.client_name || 'Cliente não informado' %></strong><small><%= q.client_contact || 'Sem contato' %></small></div>
+        <div><span class="soft-pill"><%= q.shape==='circle'?'Redondo':q.shape==='triangle'?'Triangular':q.shape==='custom'?'Especial':'Retangular' %></span><small><%= Number(q.width_cm).toLocaleString('pt-BR') %> × <%= Number(q.height_cm).toLocaleString('pt-BR') %> cm</small></div>
+        <div class="quote-metric"><strong><%= q.quantity %></strong><small>unidades</small></div>
+        <div class="quote-metric"><strong><%= q.capacity_per_sheet %></strong><small>por A3 • <%= q.sheets %> folha(s)</small></div>
+        <div class="quote-price"><strong><%= formatBRL(q.total) %></strong><small><%= q.with_cut?'com recorte':'sem recorte' %></small></div>
+        <div class="quote-user"><small>por <%= q.user_name || 'Usuário removido' %></small></div>
+        <form method="post" action="/admin/orcamentos/<%= q.id %>/excluir" data-confirm="Excluir este orçamento?"><button class="icon-action danger" title="Excluir"><i class="bi bi-trash3"></i></button></form>
+      </article>
+    <% }) %>
+  </div>
+</section>
+<%- include('_foot') %>

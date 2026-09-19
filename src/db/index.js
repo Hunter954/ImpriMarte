@@ -24,6 +24,32 @@ async function initDb() {
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       name TEXT NOT NULL DEFAULT 'Administrador',
+      role TEXT NOT NULL DEFAULT 'operator',
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+
+
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'operator';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT TRUE;
+
+    CREATE TABLE IF NOT EXISTS quotes (
+      id SERIAL PRIMARY KEY,
+      client_name TEXT,
+      client_contact TEXT,
+      shape TEXT NOT NULL DEFAULT 'rectangle',
+      width_cm NUMERIC(10,2) NOT NULL,
+      height_cm NUMERIC(10,2) NOT NULL,
+      quantity INTEGER NOT NULL,
+      with_cut BOOLEAN NOT NULL DEFAULT TRUE,
+      capacity_per_sheet INTEGER NOT NULL,
+      sheets INTEGER NOT NULL,
+      total NUMERIC(12,2) NOT NULL,
+      unit_price NUMERIC(12,4) NOT NULL,
+      calculation_method TEXT,
+      notes TEXT,
+      created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -82,9 +108,17 @@ async function initDb() {
     const exists = await query('SELECT id FROM users WHERE email = $1', [adminEmail.toLowerCase()]);
     if (!exists.rowCount) {
       const hash = await bcrypt.hash(adminPassword, 12);
-      await query('INSERT INTO users(email,password_hash,name) VALUES($1,$2,$3)', [adminEmail.toLowerCase(), hash, 'Administrador']);
+      await query('INSERT INTO users(email,password_hash,name,role,active) VALUES($1,$2,$3,$4,TRUE)', [adminEmail.toLowerCase(), hash, 'Administrador', 'admin']);
       console.log('Administrador inicial criado a partir das variáveis de ambiente.');
     }
+  }
+
+  if (adminEmail) {
+    await query("UPDATE users SET role='admin', active=TRUE WHERE email=$1", [adminEmail.toLowerCase()]);
+  }
+  const adminCount = await query("SELECT COUNT(*)::int AS count FROM users WHERE role='admin'");
+  if (adminCount.rows[0].count === 0) {
+    await query("UPDATE users SET role='admin', active=TRUE WHERE id=(SELECT id FROM users ORDER BY created_at,id LIMIT 1)");
   }
 
   const catCount = await query('SELECT COUNT(*)::int AS count FROM categories');
@@ -135,7 +169,15 @@ async function initDb() {
     site_logo_path: '',
     favicon_path: '',
     hero_background_path: '',
-    promo_background_path: ''
+    promo_background_path: '',
+    quote_sheet_width_cm: '29.7',
+    quote_sheet_height_cm: '42',
+    quote_max_print_width_cm: '48',
+    quote_spacing_cm: '0',
+    quote_cut_sheet_price: '40',
+    quote_no_cut_sheet_price: '36',
+    quote_cut_three_sheet_price: '140',
+    quote_no_cut_three_sheet_price: '120'
   };
   for (const [key, value] of Object.entries(defaults)) {
     await query('INSERT INTO settings(key,value) VALUES($1,$2) ON CONFLICT (key) DO NOTHING', [key, value]);

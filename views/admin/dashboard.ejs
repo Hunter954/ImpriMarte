@@ -6,16 +6,19 @@
     <p>Gerencie o catálogo, organize categorias, publique banners e ajuste a identidade do site sem precisar editar código.</p>
   </div>
   <div class="welcome-actions">
-    <a class="admin-btn" href="/admin/produtos/novo"><i class="bi bi-plus-lg"></i> Cadastrar produto</a>
-    <a class="admin-btn ghost" href="/admin/configuracoes"><i class="bi bi-sliders2"></i> Configurar site</a>
+    <a class="admin-btn" href="/admin/orcamentos/novo"><i class="bi bi-calculator"></i> Novo orçamento</a>
+    <a class="admin-btn ghost" href="/admin/produtos/novo"><i class="bi bi-plus-lg"></i> Cadastrar produto</a>
   </div>
 </section>
 
 <section class="stats-grid">
   <a href="/admin/produtos" class="stat-card"><span class="stat-icon orange"><i class="bi bi-box-seam"></i></span><div><small>Total de produtos</small><strong><%= stats.products %></strong><span><%= stats.active %> publicados</span></div></a>
   <a href="/admin/produtos?status=featured" class="stat-card"><span class="stat-icon purple"><i class="bi bi-star-fill"></i></span><div><small>Em destaque</small><strong><%= stats.featured %></strong><span>na página inicial</span></div></a>
+  <% if (isSuperAdmin) { %>
   <a href="/admin/categorias" class="stat-card"><span class="stat-icon blue"><i class="bi bi-tags"></i></span><div><small>Categorias ativas</small><strong><%= stats.categories %></strong><span>organizando o catálogo</span></div></a>
   <a href="/admin/banners" class="stat-card"><span class="stat-icon green"><i class="bi bi-images"></i></span><div><small>Banners ativos</small><strong><%= stats.banners %></strong><span>publicados no site</span></div></a>
+  <% } %>
+  <a href="/admin/orcamentos" class="stat-card"><span class="stat-icon orange"><i class="bi bi-calculator"></i></span><div><small>Orçamentos</small><strong><%= stats.quotes %></strong><span>salvos no sistema</span></div></a>
 </section>
 
 <div class="dashboard-grid">
@@ -37,8 +40,8 @@
   <aside class="admin-card checklist-card">
     <div class="card-head"><div><span class="card-kicker">ATALHOS</span><h3>Gerenciamento rápido</h3></div></div>
     <a href="/admin/produtos/novo"><span><i class="bi bi-plus-circle"></i></span><div><strong>Novo produto</strong><small>Preço, imagem e categoria</small></div><i class="bi bi-chevron-right"></i></a>
-    <a href="/admin/banners"><span><i class="bi bi-card-image"></i></span><div><strong>Banners da home</strong><small>Campanhas e destaques</small></div><i class="bi bi-chevron-right"></i></a>
-    <a href="/admin/configuracoes"><span><i class="bi bi-palette"></i></span><div><strong>Identidade do site</strong><small>Logo, favicon e imagens</small></div><i class="bi bi-chevron-right"></i></a>
+    <a href="/admin/orcamentos/novo"><span><i class="bi bi-calculator"></i></span><div><strong>Novo orçamento</strong><small>Adesivos e etiquetas</small></div><i class="bi bi-chevron-right"></i></a>
+    <% if (isSuperAdmin) { %><a href="/admin/usuarios"><span><i class="bi bi-people"></i></span><div><strong>Usuários</strong><small>Gerenciar acessos</small></div><i class="bi bi-chevron-right"></i></a><% } %>
     <a href="/" target="_blank"><span><i class="bi bi-window"></i></span><div><strong>Conferir site</strong><small>Visualizar página pública</small></div><i class="bi bi-box-arrow-up-right"></i></a>
   </aside>
 </div>

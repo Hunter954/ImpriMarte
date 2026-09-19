@@ -1,0 +1,29 @@
+<%- include('_head',{title}) %>
+<section class="page-intro"><div><span class="eyebrow-admin">ACESSO</span><h2>Usuários do painel</h2><p>Crie acessos para funcionários. Operadores podem cadastrar produtos e fazer orçamentos; administradores controlam todo o site.</p></div></section>
+<div class="users-layout">
+  <section class="admin-card user-create-card"><div class="card-head"><div><span class="card-kicker">NOVO ACESSO</span><h3>Cadastrar usuário</h3></div></div>
+    <form method="post" action="/admin/usuarios" class="stack-form">
+      <label><span>Nome</span><input type="text" name="name" required placeholder="Nome do funcionário"></label>
+      <label><span>E-mail</span><input type="email" name="email" required placeholder="usuario@empresa.com"></label>
+      <label><span>Senha inicial</span><input type="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres"></label>
+      <label><span>Nível de acesso</span><select name="role"><option value="operator">Operador — produtos e orçamentos</option><option value="admin">Administrador — acesso total</option></select></label>
+      <button class="admin-btn full-btn" type="submit"><i class="bi bi-person-plus"></i> Criar usuário</button>
+    </form>
+  </section>
+  <section class="admin-card users-list-card"><div class="card-head"><div><span class="card-kicker">EQUIPE</span><h3>Acessos cadastrados</h3></div><span class="count-badge"><%= users.length %></span></div>
+    <div class="users-list">
+      <% users.forEach(user=>{ %>
+      <form method="post" action="/admin/usuarios/<%= user.id %>/editar" class="user-row">
+        <div class="user-avatar"><i class="bi bi-person"></i></div>
+        <div class="user-fields"><input name="name" value="<%= user.name %>" required><input type="email" name="email" value="<%= user.email %>" required></div>
+        <select name="role"><option value="operator" <%= user.role==='operator'?'selected':'' %>>Operador</option><option value="admin" <%= user.role==='admin'?'selected':'' %>>Administrador</option></select>
+        <label class="compact-active"><input type="checkbox" name="active" <%= user.active?'checked':'' %>><span>Ativo</span></label>
+        <input class="user-password" type="password" name="password" minlength="6" placeholder="Nova senha (opcional)">
+        <button class="icon-action save" title="Salvar"><i class="bi bi-check-lg"></i></button>
+        <% if (Number(user.id)!==Number(currentUserId)) { %><button type="submit" class="icon-action danger" formaction="/admin/usuarios/<%= user.id %>/excluir" formmethod="post" data-inline-confirm="Excluir este usuário?" title="Excluir"><i class="bi bi-trash3"></i></button><% } %>
+      </form>
+      <% }) %>
+    </div>
+  </section>
+</div>
+<%- include('_foot') %>
