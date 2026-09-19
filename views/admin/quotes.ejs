@@ -1,27 +1,73 @@
 <%- include('_head',{title}) %>
 <section class="page-intro">
-  <div><span class="eyebrow-admin">PRODUÇÃO</span><h2>Orçamentos de adesivos</h2><p>Calcule aproveitamento, folhas A3 e valor final sem fazer conta manual.</p></div>
+  <div>
+    <div class="breadcrumb-admin"><a href="/admin">Painel</a><i class="bi bi-chevron-right"></i><span>Orçamentos</span></div>
+    <h2>Orçamentos de adesivos</h2>
+    <p>Calcule, visualize o encaixe na boca de 48 cm e salve os orçamentos para consultar depois.</p>
+  </div>
   <div class="intro-actions">
-    <% if (isSuperAdmin) { %><a class="admin-btn ghost" href="/admin/orcamentos/configuracoes"><i class="bi bi-sliders2"></i> Regras de preço</a><% } %>
+    <a class="admin-btn ghost" href="/admin/orcamentos/configuracoes"><i class="bi bi-sliders"></i> Regras</a>
     <a class="admin-btn" href="/admin/orcamentos/novo"><i class="bi bi-plus-lg"></i> Novo orçamento</a>
   </div>
 </section>
+
 <section class="admin-card quote-list-card">
-  <div class="card-head quote-list-head"><div><span class="card-kicker">HISTÓRICO</span><h3>Orçamentos salvos</h3></div><span class="count-badge"><%= quotes.length %> registros</span></div>
-  <% if (!quotes.length) { %><div class="empty-admin"><i class="bi bi-calculator"></i><h4>Nenhum orçamento salvo</h4><p>Crie o primeiro orçamento para começar.</p><a href="/admin/orcamentos/novo" class="admin-btn compact">Criar orçamento</a></div><% } %>
-  <div class="quote-table">
-    <% quotes.forEach(q=>{ %>
-      <article class="quote-row">
-        <div class="quote-id"><span>#<%= q.id %></span><small><%= new Date(q.created_at).toLocaleDateString('pt-BR') %></small></div>
-        <div class="quote-client"><strong><%= q.client_name || 'Cliente não informado' %></strong><small><%= q.client_contact || 'Sem contato' %></small></div>
-        <div><span class="soft-pill"><%= q.shape==='circle'?'Redondo':q.shape==='triangle'?'Triangular':q.shape==='custom'?'Especial':'Retangular' %></span><small><%= Number(q.width_cm).toLocaleString('pt-BR') %> × <%= Number(q.height_cm).toLocaleString('pt-BR') %> cm</small></div>
-        <div class="quote-metric"><strong><%= q.quantity %></strong><small>unidades</small></div>
-        <div class="quote-metric"><strong><%= q.capacity_per_sheet %></strong><small>por A3 • <%= q.sheets %> folha(s)</small></div>
-        <div class="quote-price"><strong><%= formatBRL(q.total) %></strong><small><%= q.with_cut?'com recorte':'sem recorte' %></small></div>
-        <div class="quote-user"><small>por <%= q.user_name || 'Usuário removido' %></small></div>
-        <form method="post" action="/admin/orcamentos/<%= q.id %>/excluir" data-confirm="Excluir este orçamento?"><button class="icon-action danger" title="Excluir"><i class="bi bi-trash3"></i></button></form>
-      </article>
-    <% }) %>
+  <div class="card-head quote-list-head">
+    <div>
+      <span class="card-kicker">HISTÓRICO</span>
+      <h3>Últimos orçamentos salvos</h3>
+    </div>
+    <span class="count-badge"><%= quotes.length %> registro(s)</span>
   </div>
+
+  <% if (!quotes.length) { %>
+    <div class="empty-admin">
+      <i class="bi bi-calculator"></i>
+      <h4>Nenhum orçamento salvo ainda</h4>
+      <p>Crie seu primeiro orçamento inteligente de adesivos e deixe o sistema fazer a conta.</p>
+      <a class="admin-btn" href="/admin/orcamentos/novo"><i class="bi bi-plus-lg"></i> Calcular agora</a>
+    </div>
+  <% } else { %>
+    <div class="quote-table-wrap">
+      <table class="admin-table quote-table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Formato</th>
+            <th>Medida</th>
+            <th>Qtd.</th>
+            <th>Comprimento</th>
+            <th>Total</th>
+            <th>Criado em</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% quotes.forEach(item => { %>
+            <tr>
+              <td>
+                <strong><%= item.client_name || 'Sem nome' %></strong>
+                <small><%= item.client_contact || 'Sem contato' %></small>
+              </td>
+              <td><span class="shape-pill <%= item.shape %>"><%= item.shape === 'circle' ? 'Redondo' : item.shape === 'triangle' ? 'Triangular' : item.shape === 'custom' ? 'Especial' : 'Quadrado / retângulo' %></span></td>
+              <td><%= Number(item.width_cm).toLocaleString('pt-BR') %> × <%= Number(item.height_cm || item.width_cm).toLocaleString('pt-BR') %> cm</td>
+              <td><%= item.quantity %></td>
+              <td><%= Number(item.used_length_cm || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) %> cm</td>
+              <td><strong><%= formatBRL(item.total) %></strong><small><%= item.with_cut ? 'Com recorte' : 'Sem recorte' %></small></td>
+              <td><%= new Date(item.created_at).toLocaleString('pt-BR') %></td>
+              <td class="row-actions">
+                <form method="post" action="/admin/orcamentos/<%= item.id %>/excluir" data-confirm="Excluir este orçamento salvo?">
+                  <button class="icon-action danger" type="submit" title="Excluir"><i class="bi bi-trash3"></i></button>
+                </form>
+              </td>
+            </tr>
+            <tr class="quote-table-note-row">
+              <td colspan="8"><div class="quote-table-note"><strong>Método:</strong> <%= item.method || '—' %> · <%= item.pricing_rule || '—' %></div></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
 </section>
 <%- include('_foot') %>

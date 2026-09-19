@@ -24,25 +24,20 @@
     <nav class="admin-nav">
       <a class="<%= adminPath === '/' ? 'active' : '' %>" href="/admin"><i class="bi bi-grid-1x2-fill"></i><span>Visão geral</span></a>
       <a class="<%= adminPath.startsWith('/produtos') ? 'active' : '' %>" href="/admin/produtos"><i class="bi bi-box-seam-fill"></i><span>Produtos</span></a>
-      <a class="<%= adminPath.startsWith('/orcamentos') ? 'active' : '' %>" href="/admin/orcamentos"><i class="bi bi-calculator-fill"></i><span>Orçamentos</span></a>
-      <% if (isSuperAdmin) { %>
       <a class="<%= adminPath.startsWith('/categorias') ? 'active' : '' %>" href="/admin/categorias"><i class="bi bi-tags-fill"></i><span>Categorias</span></a>
+      <a class="<%= adminPath.startsWith('/orcamentos') ? 'active' : '' %>" href="/admin/orcamentos"><i class="bi bi-calculator-fill"></i><span>Orçamentos</span></a>
       <a class="<%= adminPath.startsWith('/banners') ? 'active' : '' %>" href="/admin/banners"><i class="bi bi-images"></i><span>Banners</span></a>
-      <% } %>
     </nav>
 
     <div class="sidebar-caption">SITE</div>
     <nav class="admin-nav">
-      <% if (isSuperAdmin) { %>
-      <a class="<%= adminPath.startsWith('/usuarios') ? 'active' : '' %>" href="/admin/usuarios"><i class="bi bi-people-fill"></i><span>Usuários</span></a>
       <a class="<%= adminPath.startsWith('/configuracoes') ? 'active' : '' %>" href="/admin/configuracoes"><i class="bi bi-sliders2"></i><span>Configurações</span></a>
-      <% } %>
       <a href="/" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i><span>Visualizar site</span></a>
     </nav>
 
     <div class="sidebar-user">
       <div class="sidebar-avatar"><i class="bi bi-person-fill"></i></div>
-      <div><strong><%= adminName %></strong><small><%= isSuperAdmin ? 'Administrador' : 'Operador' %></small></div>
+      <div><strong><%= adminName %></strong><small>Administrador</small></div>
       <form method="post" action="/admin/logout"><button type="submit" title="Sair"><i class="bi bi-box-arrow-right"></i></button></form>
     </div>
   </aside>

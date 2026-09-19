@@ -1,29 +1,33 @@
 <%- include('_head',{title}) %>
-<section class="page-intro"><div><div class="breadcrumb-admin"><a href="/admin/orcamentos">Orçamentos</a><i class="bi bi-chevron-right"></i><span>Regras</span></div><h2>Regras do calculador</h2><p>Altere preços e área útil sem precisar mudar o código.</p></div></section>
-<form method="post" class="quote-settings-grid">
-  <section class="admin-card quote-section"><div class="card-head"><div><span class="card-kicker">FOLHA / MÁQUINA</span><h3>Área de produção</h3></div></div>
-    <div class="two-fields">
-      <label class="stack-label"><span>Largura da folha A3 (cm)</span><input type="number" step="0.1" min="1" name="quote_sheet_width_cm" value="<%= settings.quote_sheet_width_cm || '29.7' %>"></label>
-      <label class="stack-label"><span>Altura da folha A3 (cm)</span><input type="number" step="0.1" min="1" name="quote_sheet_height_cm" value="<%= settings.quote_sheet_height_cm || '42' %>"></label>
-      <label class="stack-label"><span>Boca máxima da impressora (cm)</span><input type="number" step="0.1" min="1" name="quote_max_print_width_cm" value="<%= settings.quote_max_print_width_cm || '48' %>"></label>
-      <label class="stack-label"><span>Espaço entre adesivos (cm)</span><input type="number" step="0.01" min="0" name="quote_spacing_cm" value="<%= settings.quote_spacing_cm || '0' %>"><small>Deixe 0 para reproduzir a regra atual de 40 unidades 5×5 em A3.</small></label>
-    </div>
-  </section>
-  <section class="admin-card quote-section"><div class="card-head"><div><span class="card-kicker">PRECIFICAÇÃO</span><h3>Com recorte</h3></div></div>
-    <div class="two-fields"><label class="stack-label"><span>Preço por folha — 1 ou 2 folhas</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_cut_sheet_price" value="<%= settings.quote_cut_sheet_price || '40' %>"></div></label><label class="stack-label"><span>Tabela especial 5×5 — 81 a 120 unidades</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_cut_three_sheet_price" value="<%= settings.quote_cut_three_sheet_price || '140' %>"></div></label></div>
-  </section>
-  <section class="admin-card quote-section"><div class="card-head"><div><span class="card-kicker">PRECIFICAÇÃO</span><h3>Sem recorte</h3></div></div>
-    <div class="two-fields"><label class="stack-label"><span>Preço por folha — 1 ou 2 folhas</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_no_cut_sheet_price" value="<%= settings.quote_no_cut_sheet_price || '36' %>"></div></label><label class="stack-label"><span>Tabela especial 5×5 — 81 a 120 unidades</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_no_cut_three_sheet_price" value="<%= settings.quote_no_cut_three_sheet_price || '120' %>"></div></label></div>
-  </section>
+<section class="page-intro">
+  <div>
+    <div class="breadcrumb-admin"><a href="/admin/orcamentos">Orçamentos</a><i class="bi bi-chevron-right"></i><span>Configurações</span></div>
+    <h2>Regras do cálculo</h2>
+    <p>Esses valores alimentam a calculadora em tempo real. A fórmula usa a largura útil da máquina e o comprimento linear necessário.</p>
+  </div>
+  <div class="intro-actions"><a class="admin-btn ghost" href="/admin/orcamentos"><i class="bi bi-arrow-left"></i> Voltar</a></div>
+</section>
+<% if (saved) { %><div class="alert success"><i class="bi bi-check-circle-fill"></i><span>Regras de orçamento atualizadas com sucesso.</span></div><% } %>
 
-  <section class="admin-card quote-section"><div class="card-head"><div><span class="card-kicker">CÁLCULO POR BOBINA</span><h3>Outros tamanhos</h3><p class="card-help">Para medidas diferentes de 5×5 cm, o sistema calcula o comprimento realmente ocupado na largura útil da impressora.</p></div></div>
-    <div class="two-fields">
-      <label class="stack-label"><span>Preço por metro — com recorte</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_cut_linear_meter_price" value="<%= settings.quote_cut_linear_meter_price || '120' %>"></div><small>Com R$ 120/m, 20 adesivos 10×10 ocupando 50 cm = R$ 60.</small></label>
-      <label class="stack-label"><span>Preço mínimo — com recorte</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_minimum_cut_price" value="<%= settings.quote_minimum_cut_price || '40' %>"></div></label>
-      <label class="stack-label"><span>Preço por metro — sem recorte</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_no_cut_linear_meter_price" value="<%= settings.quote_no_cut_linear_meter_price || '108' %>"></div></label>
-      <label class="stack-label"><span>Preço mínimo — sem recorte</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_minimum_no_cut_price" value="<%= settings.quote_minimum_no_cut_price || '36' %>"></div></label>
+<form method="post" action="/admin/orcamentos/configuracoes" class="admin-card quote-settings-form">
+  <div class="card-head">
+    <div>
+      <span class="card-kicker">MÁQUINA E PREÇOS</span>
+      <h3>Configurações da calculadora</h3>
     </div>
-  </section>
-  <div class="quote-settings-actions"><a class="admin-btn ghost" href="/admin/orcamentos">Cancelar</a><button class="admin-btn" type="submit"><i class="bi bi-check2"></i> Salvar regras</button></div>
+  </div>
+  <div class="quote-settings-grid">
+    <label class="stack-label"><span>Largura da A3 (cm)</span><input type="number" name="sheet_width" min="1" step="0.1" value="<%= config.sheetWidth %>" required></label>
+    <label class="stack-label"><span>Altura da A3 (cm)</span><input type="number" name="sheet_height" min="1" step="0.1" value="<%= config.sheetHeight %>" required></label>
+    <label class="stack-label"><span>Boca útil da impressora (cm)</span><input type="number" name="max_print_width" min="1" step="0.1" value="<%= config.maxPrintWidth %>" required></label>
+    <label class="stack-label"><span>Espaçamento entre adesivos (cm)</span><input type="number" name="spacing" min="0" step="0.1" value="<%= config.spacing %>" required></label>
+    <label class="stack-label"><span>Preço por metro com recorte (R$)</span><input type="number" name="cut_linear_meter_price" min="0" step="0.01" value="<%= config.cutLinearMeterPrice %>" required></label>
+    <label class="stack-label"><span>Preço por metro sem recorte (R$)</span><input type="number" name="no_cut_linear_meter_price" min="0" step="0.01" value="<%= config.noCutLinearMeterPrice %>" required></label>
+    <label class="stack-label"><span>Valor mínimo com recorte (R$)</span><input type="number" name="minimum_cut_price" min="0" step="0.01" value="<%= config.minimumCutPrice %>" required></label>
+    <label class="stack-label"><span>Valor mínimo sem recorte (R$)</span><input type="number" name="minimum_no_cut_price" min="0" step="0.01" value="<%= config.minimumNoCutPrice %>" required></label>
+  </div>
+  <div class="form-actions quote-settings-actions">
+    <button class="admin-btn" type="submit"><i class="bi bi-check2-circle"></i> Salvar regras</button>
+  </div>
 </form>
 <%- include('_foot') %>

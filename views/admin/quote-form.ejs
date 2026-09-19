@@ -1,59 +1,103 @@
 <%- include('_head',{title}) %>
 <section class="page-intro">
-  <div><div class="breadcrumb-admin"><a href="/admin/orcamentos">Orçamentos</a><i class="bi bi-chevron-right"></i><span>Novo</span></div><h2>Calcular adesivos</h2><p>Informe formato, medida e quantidade. O aproveitamento e o preço são calculados na hora.</p></div>
+  <div>
+    <div class="breadcrumb-admin"><a href="/admin/orcamentos">Orçamentos</a><i class="bi bi-chevron-right"></i><span>Novo</span></div>
+    <h2>Calculadora de adesivos</h2>
+    <p>Trabalhando por largura útil de 48 cm e preço por comprimento linear. A prévia mostra exatamente como o encaixe fica.</p>
+  </div>
+  <div class="intro-actions">
+    <a class="admin-btn ghost" href="/admin/orcamentos/configuracoes"><i class="bi bi-sliders"></i> Configurações</a>
+    <a class="admin-btn ghost" href="/admin/orcamentos"><i class="bi bi-clock-history"></i> Ver históricos</a>
+  </div>
 </section>
 <% if (error) { %><div class="alert error"><i class="bi bi-exclamation-triangle-fill"></i><span><%= error %></span></div><% } %>
+
 <form method="post" action="/admin/orcamentos/novo" class="quote-builder" data-quote-calculator
   data-sheet-width="<%= config.sheetWidth %>" data-sheet-height="<%= config.sheetHeight %>" data-max-print-width="<%= config.maxPrintWidth %>" data-spacing="<%= config.spacing %>"
-  data-cut-price="<%= config.cutSheetPrice %>" data-no-cut-price="<%= config.noCutSheetPrice %>" data-cut-three="<%= config.cutThreeSheetPrice %>" data-no-cut-three="<%= config.noCutThreeSheetPrice %>"
   data-cut-meter="<%= config.cutLinearMeterPrice %>" data-no-cut-meter="<%= config.noCutLinearMeterPrice %>" data-min-cut="<%= config.minimumCutPrice %>" data-min-no-cut="<%= config.minimumNoCutPrice %>">
+
   <div class="quote-form-column">
     <section class="admin-card quote-section">
-      <div class="card-head"><div><span class="card-kicker">1. CLIENTE</span><h3>Identificação</h3></div></div>
+      <div class="card-head">
+        <div>
+          <span class="card-kicker">1. CLIENTE</span>
+          <h3>Dados do orçamento</h3>
+        </div>
+      </div>
       <div class="two-fields">
-        <label class="stack-label"><span>Nome do cliente <small>opcional</small></span><input type="text" name="client_name" placeholder="Ex.: Loja da Maria" maxlength="120"></label>
-        <label class="stack-label"><span>Contato <small>opcional</small></span><input type="text" name="client_contact" placeholder="WhatsApp ou telefone" maxlength="80"></label>
+        <label class="stack-label"><span>Nome do cliente <small>opcional</small></span><input type="text" name="client_name" maxlength="120" placeholder="Ex.: Maria Presentes"></label>
+        <label class="stack-label"><span>Contato <small>opcional</small></span><input type="text" name="client_contact" maxlength="80" placeholder="WhatsApp ou telefone"></label>
       </div>
     </section>
 
     <section class="admin-card quote-section">
-      <div class="card-head"><div><span class="card-kicker">2. FORMATO</span><h3>Como é a etiqueta?</h3><p class="card-help">O sistema usa um encaixe diferente para cada geometria.</p></div></div>
+      <div class="card-head">
+        <div>
+          <span class="card-kicker">2. FORMATO E MEDIDAS</span>
+          <h3>Como a etiqueta será produzida?</h3>
+          <p class="page-intro-note">O sistema usa um tipo de encaixe diferente para quadrado, redondo, triângulo e formato especial.</p>
+        </div>
+      </div>
+
       <div class="shape-picker">
         <label><input type="radio" name="shape" value="rectangle" checked><span><i class="bi bi-square"></i><b>Quadrado / retângulo</b><small>grade + rotação</small></span></label>
         <label><input type="radio" name="shape" value="circle"><span><i class="bi bi-circle"></i><b>Redondo</b><small>encaixe intercalado</small></span></label>
-        <label><input type="radio" name="shape" value="triangle"><span><i class="bi bi-triangle"></i><b>Triangular</b><small>em pé + invertido</small></span></label>
-        <label><input type="radio" name="shape" value="custom"><span><i class="bi bi-stars"></i><b>Especial</b><small>cálculo conservador</small></span></label>
+        <label><input type="radio" name="shape" value="triangle"><span><i class="bi bi-triangle"></i><b>Triangular</b><small>um em pé, outro invertido</small></span></label>
+        <label><input type="radio" name="shape" value="custom"><span><i class="bi bi-stars"></i><b>Formato especial</b><small>caixa delimitadora</small></span></label>
       </div>
+
       <div class="quote-dimensions">
         <label class="stack-label"><span data-width-label>Largura</span><div class="input-suffix"><input type="number" name="width_cm" min="0.1" step="0.1" value="5" required data-quote-width><em>cm</em></div></label>
         <label class="stack-label" data-height-field><span data-height-label>Altura</span><div class="input-suffix"><input type="number" name="height_cm" min="0.1" step="0.1" value="5" required data-quote-height><em>cm</em></div></label>
         <label class="stack-label"><span>Quantidade</span><input type="number" name="quantity" min="1" step="1" value="40" required data-quote-quantity></label>
       </div>
+
       <div class="cut-choice">
-        <div><strong>Recorte eletrônico</strong><small>Ative quando a máquina também fará o contorno de corte.</small></div>
+        <div>
+          <strong>Recorte eletrônico</strong>
+          <small>Com recorte usa o valor por metro de impressão + corte. Sem recorte usa apenas impressão.</small>
+        </div>
         <label class="switch"><input type="checkbox" name="with_cut" checked data-quote-cut><span></span></label>
       </div>
     </section>
 
     <section class="admin-card quote-section">
-      <div class="card-head"><div><span class="card-kicker">3. OBSERVAÇÕES</span><h3>Detalhes do pedido</h3></div></div>
-      <label class="stack-label"><textarea name="notes" rows="4" placeholder="Material, acabamento, prazo, detalhes do arquivo..."></textarea></label>
+      <div class="card-head">
+        <div>
+          <span class="card-kicker">3. OBSERVAÇÕES</span>
+          <h3>Detalhes adicionais</h3>
+        </div>
+      </div>
+      <label class="stack-label"><textarea name="notes" rows="4" placeholder="Material, acabamento, laminação, tipo de adesivo, prazo... "></textarea></label>
     </section>
   </div>
 
   <aside class="quote-result-column">
     <section class="admin-card quote-result-card">
-      <div class="quote-result-top"><span class="card-kicker">CÁLCULO EM TEMPO REAL</span><span class="live-dot"><i></i> atualizado</span></div>
-      <div class="quote-total"><small>Valor do orçamento</small><strong data-quote-total>R$ 40,00</strong><span data-quote-unit>R$ 1,00 por unidade</span></div>
-      <div class="quote-result-grid">
-        <div><i class="bi bi-grid-3x3-gap"></i><span><small>Adesivos por linha</small><strong data-quote-across>8</strong></span></div>
-        <div><i class="bi bi-rulers"></i><span><small>Comprimento usado</small><strong data-quote-length>25 cm</strong></span></div>
-        <div><i class="bi bi-scissors"></i><span><small>Produção</small><strong data-quote-cut-label>Com recorte</strong></span></div>
-        <div><i class="bi bi-file-earmark"></i><span><small>Equivalente em A3</small><strong data-quote-sheets>1</strong></span></div>
+      <div class="quote-result-top"><span class="card-kicker">RESULTADO</span><span class="live-dot"><i></i> atualizando</span></div>
+      <div class="quote-total">
+        <small>Valor do orçamento</small>
+        <strong data-quote-total>R$ 40,00</strong>
+        <span data-quote-unit>R$ 1,00 por unidade</span>
       </div>
-      <div class="packing-method"><i class="bi bi-magic"></i><div><small>Encaixe utilizado</small><strong data-quote-method>Grade otimizada com rotação</strong></div></div>
-      <div class="packing-preview"><div class="packing-preview-head"><span>Prévia de encaixe</span><small>largura útil da máquina</small></div><canvas data-packing-canvas width="520" height="360"></canvas></div>
+
+      <div class="quote-result-grid">
+        <div><i class="bi bi-grid-3x3-gap"></i><span><small>Cabem por linha</small><strong data-quote-across>8</strong></span></div>
+        <div><i class="bi bi-rulers"></i><span><small>Comprimento usado</small><strong data-quote-length>25 cm</strong></span></div>
+        <div><i class="bi bi-printer"></i><span><small>Largura útil</small><strong data-quote-width-used>48 cm</strong></span></div>
+        <div><i class="bi bi-file-earmark"></i><span><small>Equiv. A3</small><strong data-quote-sheets>1</strong></span></div>
+        <div><i class="bi bi-collection"></i><span><small>Capacidade A3</small><strong data-quote-a3-capacity>35 un.</strong></span></div>
+        <div><i class="bi bi-scissors"></i><span><small>Produção</small><strong data-quote-cut-label>Com recorte</strong></span></div>
+      </div>
+
+      <div class="packing-method"><i class="bi bi-magic"></i><div><small>Encaixe utilizado</small><strong data-quote-method>Grade otimizada na boca de 48 cm</strong></div></div>
       <div class="price-rule-note" data-price-rule-note></div>
+
+      <div class="packing-preview">
+        <div class="packing-preview-head"><span>Prévia da boca de 48 cm</span><small>desenho do encaixe estimado</small></div>
+        <canvas data-packing-canvas></canvas>
+      </div>
+
       <button class="admin-btn full-btn quote-save" type="submit"><i class="bi bi-check2-circle"></i> Salvar orçamento</button>
     </section>
   </aside>
