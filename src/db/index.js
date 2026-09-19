@@ -116,6 +116,8 @@ async function initDb() {
   if (adminEmail) {
     await query("UPDATE users SET role='admin', active=TRUE WHERE email=$1", [adminEmail.toLowerCase()]);
   }
+  // O primeiro usuário é o proprietário original do painel. Nunca rebaixá-lo para operador.
+  await query("UPDATE users SET role='admin', active=TRUE WHERE id=(SELECT id FROM users ORDER BY created_at,id LIMIT 1)");
   const adminCount = await query("SELECT COUNT(*)::int AS count FROM users WHERE role='admin'");
   if (adminCount.rows[0].count === 0) {
     await query("UPDATE users SET role='admin', active=TRUE WHERE id=(SELECT id FROM users ORDER BY created_at,id LIMIT 1)");
@@ -177,7 +179,11 @@ async function initDb() {
     quote_cut_sheet_price: '40',
     quote_no_cut_sheet_price: '36',
     quote_cut_three_sheet_price: '140',
-    quote_no_cut_three_sheet_price: '120'
+    quote_no_cut_three_sheet_price: '120',
+    quote_cut_linear_meter_price: '120',
+    quote_no_cut_linear_meter_price: '108',
+    quote_minimum_cut_price: '40',
+    quote_minimum_no_cut_price: '36'
   };
   for (const [key, value] of Object.entries(defaults)) {
     await query('INSERT INTO settings(key,value) VALUES($1,$2) ON CONFLICT (key) DO NOTHING', [key, value]);

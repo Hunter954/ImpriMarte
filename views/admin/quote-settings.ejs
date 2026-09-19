@@ -10,10 +10,19 @@
     </div>
   </section>
   <section class="admin-card quote-section"><div class="card-head"><div><span class="card-kicker">PRECIFICAÇÃO</span><h3>Com recorte</h3></div></div>
-    <div class="two-fields"><label class="stack-label"><span>Preço por folha — 1 ou 2 folhas</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_cut_sheet_price" value="<%= settings.quote_cut_sheet_price || '40' %>"></div></label><label class="stack-label"><span>Pacote de 3 folhas (5×5: acima de 80)</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_cut_three_sheet_price" value="<%= settings.quote_cut_three_sheet_price || '140' %>"></div></label></div>
+    <div class="two-fields"><label class="stack-label"><span>Preço por folha — 1 ou 2 folhas</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_cut_sheet_price" value="<%= settings.quote_cut_sheet_price || '40' %>"></div></label><label class="stack-label"><span>Tabela especial 5×5 — 81 a 120 unidades</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_cut_three_sheet_price" value="<%= settings.quote_cut_three_sheet_price || '140' %>"></div></label></div>
   </section>
   <section class="admin-card quote-section"><div class="card-head"><div><span class="card-kicker">PRECIFICAÇÃO</span><h3>Sem recorte</h3></div></div>
-    <div class="two-fields"><label class="stack-label"><span>Preço por folha — 1 ou 2 folhas</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_no_cut_sheet_price" value="<%= settings.quote_no_cut_sheet_price || '36' %>"></div></label><label class="stack-label"><span>Pacote de 3 folhas (5×5: acima de 80)</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_no_cut_three_sheet_price" value="<%= settings.quote_no_cut_three_sheet_price || '120' %>"></div></label></div>
+    <div class="two-fields"><label class="stack-label"><span>Preço por folha — 1 ou 2 folhas</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_no_cut_sheet_price" value="<%= settings.quote_no_cut_sheet_price || '36' %>"></div></label><label class="stack-label"><span>Tabela especial 5×5 — 81 a 120 unidades</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_no_cut_three_sheet_price" value="<%= settings.quote_no_cut_three_sheet_price || '120' %>"></div></label></div>
+  </section>
+
+  <section class="admin-card quote-section"><div class="card-head"><div><span class="card-kicker">CÁLCULO POR BOBINA</span><h3>Outros tamanhos</h3><p class="card-help">Para medidas diferentes de 5×5 cm, o sistema calcula o comprimento realmente ocupado na largura útil da impressora.</p></div></div>
+    <div class="two-fields">
+      <label class="stack-label"><span>Preço por metro — com recorte</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_cut_linear_meter_price" value="<%= settings.quote_cut_linear_meter_price || '120' %>"></div><small>Com R$ 120/m, 20 adesivos 10×10 ocupando 50 cm = R$ 60.</small></label>
+      <label class="stack-label"><span>Preço mínimo — com recorte</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_minimum_cut_price" value="<%= settings.quote_minimum_cut_price || '40' %>"></div></label>
+      <label class="stack-label"><span>Preço por metro — sem recorte</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_no_cut_linear_meter_price" value="<%= settings.quote_no_cut_linear_meter_price || '108' %>"></div></label>
+      <label class="stack-label"><span>Preço mínimo — sem recorte</span><div class="money-field"><span>R$</span><input type="number" step="0.01" min="0" name="quote_minimum_no_cut_price" value="<%= settings.quote_minimum_no_cut_price || '36' %>"></div></label>
+    </div>
   </section>
   <div class="quote-settings-actions"><a class="admin-btn ghost" href="/admin/orcamentos">Cancelar</a><button class="admin-btn" type="submit"><i class="bi bi-check2"></i> Salvar regras</button></div>
 </form>

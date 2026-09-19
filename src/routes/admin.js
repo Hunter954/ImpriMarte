@@ -84,6 +84,14 @@ router.post('/logout', requireAdmin, (req, res) => req.session.destroy(() => res
 router.use(requireAdmin);
 router.use(async (req, res, next) => {
   try {
+    // Sincroniza o perfil do banco em cada acesso. Assim uma correção de permissão
+    // entra em vigor mesmo se o navegador ainda estiver com uma sessão antiga.
+    const currentUser = await query('SELECT name,role,active FROM users WHERE id=$1', [req.session.userId]);
+    if (!currentUser.rowCount || !currentUser.rows[0].active) {
+      return req.session.destroy(() => res.redirect('/admin/login'));
+    }
+    req.session.userName = currentUser.rows[0].name;
+    req.session.userRole = currentUser.rows[0].role || 'operator';
     res.locals.adminName = req.session.userName || 'Administrador';
     res.locals.adminRole = req.session.userRole || 'operator';
     res.locals.isSuperAdmin = res.locals.adminRole === 'admin';
@@ -291,7 +299,11 @@ function quoteConfigFromSettings(settings) {
     cutSheetPrice: Number(settings.quote_cut_sheet_price || 40),
     noCutSheetPrice: Number(settings.quote_no_cut_sheet_price || 36),
     cutThreeSheetPrice: Number(settings.quote_cut_three_sheet_price || 140),
-    noCutThreeSheetPrice: Number(settings.quote_no_cut_three_sheet_price || 120)
+    noCutThreeSheetPrice: Number(settings.quote_no_cut_three_sheet_price || 120),
+    cutLinearMeterPrice: Number(settings.quote_cut_linear_meter_price || 120),
+    noCutLinearMeterPrice: Number(settings.quote_no_cut_linear_meter_price || 108),
+    minimumCutPrice: Number(settings.quote_minimum_cut_price || 40),
+    minimumNoCutPrice: Number(settings.quote_minimum_no_cut_price || 36)
   };
 }
 
@@ -349,7 +361,7 @@ router.get('/orcamentos/configuracoes', async (req,res,next)=>{
 router.post('/orcamentos/configuracoes', async (req,res,next)=>{
   try {
     if (req.session.userRole !== 'admin') return res.redirect('/admin/orcamentos');
-    const keys=['quote_sheet_width_cm','quote_sheet_height_cm','quote_max_print_width_cm','quote_spacing_cm','quote_cut_sheet_price','quote_no_cut_sheet_price','quote_cut_three_sheet_price','quote_no_cut_three_sheet_price'];
+    const keys=['quote_sheet_width_cm','quote_sheet_height_cm','quote_max_print_width_cm','quote_spacing_cm','quote_cut_sheet_price','quote_no_cut_sheet_price','quote_cut_three_sheet_price','quote_no_cut_three_sheet_price','quote_cut_linear_meter_price','quote_no_cut_linear_meter_price','quote_minimum_cut_price','quote_minimum_no_cut_price'];
     for(const key of keys){
       const value=String(req.body[key]??'').trim().replace(',','.');
       if(value!=='' && Number.isFinite(Number(value))) await query('INSERT INTO settings(key,value) VALUES($1,$2) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value',[key,value]);
@@ -383,8 +395,10 @@ router.post('/usuarios', async (req,res,next)=>{
 router.post('/usuarios/:id/editar', async (req,res,next)=>{
   try {
     if (req.session.userRole !== 'admin') return res.redirect('/admin');
-    const role=req.body.role==='admin'?'admin':'operator';
-    const active=bool(req.body.active);
+    let role=req.body.role==='admin'?'admin':'operator';
+    let active=bool(req.body.active);
+    // O próprio administrador logado não pode se rebaixar/desativar por acidente.
+    if(Number(req.params.id)===Number(req.session.userId)){ role='admin'; active=true; }
     await query('UPDATE users SET name=$1,email=$2,role=$3,active=$4 WHERE id=$5',[String(req.body.name||'').trim(),String(req.body.email||'').trim().toLowerCase(),role,active,req.params.id]);
     if(String(req.body.password||'').length>=6){
       const hash=await bcrypt.hash(String(req.body.password),12);

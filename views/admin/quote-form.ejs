@@ -5,7 +5,8 @@
 <% if (error) { %><div class="alert error"><i class="bi bi-exclamation-triangle-fill"></i><span><%= error %></span></div><% } %>
 <form method="post" action="/admin/orcamentos/novo" class="quote-builder" data-quote-calculator
   data-sheet-width="<%= config.sheetWidth %>" data-sheet-height="<%= config.sheetHeight %>" data-max-print-width="<%= config.maxPrintWidth %>" data-spacing="<%= config.spacing %>"
-  data-cut-price="<%= config.cutSheetPrice %>" data-no-cut-price="<%= config.noCutSheetPrice %>" data-cut-three="<%= config.cutThreeSheetPrice %>" data-no-cut-three="<%= config.noCutThreeSheetPrice %>">
+  data-cut-price="<%= config.cutSheetPrice %>" data-no-cut-price="<%= config.noCutSheetPrice %>" data-cut-three="<%= config.cutThreeSheetPrice %>" data-no-cut-three="<%= config.noCutThreeSheetPrice %>"
+  data-cut-meter="<%= config.cutLinearMeterPrice %>" data-no-cut-meter="<%= config.noCutLinearMeterPrice %>" data-min-cut="<%= config.minimumCutPrice %>" data-min-no-cut="<%= config.minimumNoCutPrice %>">
   <div class="quote-form-column">
     <section class="admin-card quote-section">
       <div class="card-head"><div><span class="card-kicker">1. CLIENTE</span><h3>Identificação</h3></div></div>
@@ -45,13 +46,13 @@
       <div class="quote-result-top"><span class="card-kicker">CÁLCULO EM TEMPO REAL</span><span class="live-dot"><i></i> atualizado</span></div>
       <div class="quote-total"><small>Valor do orçamento</small><strong data-quote-total>R$ 40,00</strong><span data-quote-unit>R$ 1,00 por unidade</span></div>
       <div class="quote-result-grid">
-        <div><i class="bi bi-grid-3x3-gap"></i><span><small>Cabem por A3</small><strong data-quote-capacity>40</strong></span></div>
-        <div><i class="bi bi-file-earmark"></i><span><small>Folhas necessárias</small><strong data-quote-sheets>1</strong></span></div>
+        <div><i class="bi bi-grid-3x3-gap"></i><span><small>Adesivos por linha</small><strong data-quote-across>8</strong></span></div>
+        <div><i class="bi bi-rulers"></i><span><small>Comprimento usado</small><strong data-quote-length>25 cm</strong></span></div>
         <div><i class="bi bi-scissors"></i><span><small>Produção</small><strong data-quote-cut-label>Com recorte</strong></span></div>
-        <div><i class="bi bi-boxes"></i><span><small>Capacidade total</small><strong data-quote-production>40 un.</strong></span></div>
+        <div><i class="bi bi-file-earmark"></i><span><small>Equivalente em A3</small><strong data-quote-sheets>1</strong></span></div>
       </div>
       <div class="packing-method"><i class="bi bi-magic"></i><div><small>Encaixe utilizado</small><strong data-quote-method>Grade otimizada com rotação</strong></div></div>
-      <div class="packing-preview"><div class="packing-preview-head"><span>Prévia de aproveitamento</span><small>1 folha A3</small></div><canvas data-packing-canvas width="520" height="360"></canvas></div>
+      <div class="packing-preview"><div class="packing-preview-head"><span>Prévia de encaixe</span><small>largura útil da máquina</small></div><canvas data-packing-canvas width="520" height="360"></canvas></div>
       <div class="price-rule-note" data-price-rule-note></div>
       <button class="admin-btn full-btn quote-save" type="submit"><i class="bi bi-check2-circle"></i> Salvar orçamento</button>
     </section>
